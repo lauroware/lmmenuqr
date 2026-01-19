@@ -353,69 +353,71 @@ const Appearance = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Fondo</label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <select
-                    value={theme.backgroundType}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setTheme((prev) => ({
-                        ...prev,
-                        backgroundType: v,
-                        backgroundValue: v === 'color' ? (prev.backgroundValue || '#ffffff') : (prev.backgroundValue || ''),
-                      }));
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div className="min-w-0">
+    <select
+      value={theme.backgroundType}
+      onChange={(e) => {
+        const v = e.target.value;
+        setTheme((prev) => ({
+          ...prev,
+          backgroundType: v,
+          backgroundValue: v === 'color' ? (prev.backgroundValue || '#ffffff') : (prev.backgroundValue || ''),
+        }));
 
-                      // si pasa a color, limpio file pendiente de fondo-imagen
-                      if (v === 'color') {
-                        setFiles((prev) => ({ ...prev, backgroundValue: null }));
-                        setPreviews((prev) => ({ ...prev, backgroundValue: '' }));
-                        if (bgInputRef.current) bgInputRef.current.value = '';
-                      }
-                    }}
-                    className="w-full px-4 py-3 border rounded-lg border-gray-300 bg-white"
-                  >
-                    <option value="color">Color</option>
-                    <option value="image">Imagen</option>
-                  </select>
-                </div>
+        if (v === 'color') {
+          setFiles((prev) => ({ ...prev, backgroundValue: null }));
+          setPreviews((prev) => ({ ...prev, backgroundValue: '' }));
+          if (bgInputRef.current) bgInputRef.current.value = '';
+        }
+      }}
+      className="w-full px-4 py-3 border rounded-lg border-gray-300 bg-white"
+    >
+      <option value="color">Color</option>
+      <option value="image">Imagen</option>
+    </select>
+  </div>
 
-                {theme.backgroundType === 'color' ? (
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={theme.backgroundValue || '#ffffff'}
-                      onChange={(e) =>
-                        setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-                      }
-                      className="h-10 w-12 rounded border border-gray-300"
-                    />
-                    <input
-                      type="text"
-                      value={theme.backgroundValue}
-                      onChange={(e) =>
-                        setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-                      }
-                      className="flex-1 px-4 py-3 border rounded-lg border-gray-300"
-                      placeholder="#ffffff"
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={theme.backgroundValue}
-                      onChange={(e) =>
-                        setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border rounded-lg border-gray-300"
-                      placeholder="URL (opcional) o subí una imagen abajo"
-                    />
-                    {errors.backgroundValue && (
-                      <p className="text-sm text-red-600">{errors.backgroundValue}</p>
-                    )}
-                  </div>
-                )}
-              </div>
+  <div className="min-w-0">
+    {theme.backgroundType === 'color' ? (
+      <div className="flex items-center gap-3 min-w-0">
+        <input
+          type="color"
+          value={theme.backgroundValue || '#ffffff'}
+          onChange={(e) =>
+            setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
+          }
+          className="h-10 w-12 shrink-0 rounded border border-gray-300"
+        />
+        <input
+          type="text"
+          value={theme.backgroundValue}
+          onChange={(e) =>
+            setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
+          }
+          className="min-w-0 flex-1 px-4 py-3 border rounded-lg border-gray-300"
+          placeholder="#ffffff"
+        />
+      </div>
+    ) : (
+      <div className="min-w-0">
+        <input
+          type="text"
+          value={theme.backgroundValue}
+          onChange={(e) =>
+            setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
+          }
+          className="w-full min-w-0 px-4 py-3 border rounded-lg border-gray-300"
+          placeholder="URL (opcional) o subí una imagen abajo"
+        />
+        {errors.backgroundValue && (
+          <p className="text-sm text-red-600 mt-2">{errors.backgroundValue}</p>
+        )}
+      </div>
+    )}
+  </div>
+</div>
+
 
               {/* Background upload only if image */}
               {theme.backgroundType === 'image' && (
