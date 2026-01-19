@@ -194,13 +194,11 @@ const Profile = () => {
             {/* Menu Statistics */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h2 className="text-xl font-semibold text-gray-900">Estadísticas del menú</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Info del menú</h2>
               </div>
               <div className="px-6 py-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">{profile.views}</p>
-                  </div>
+              
                   <div className="text-center">
                     <p className="text-2xl font-bold text-green-600">{profile.uniqueId ? profile.uniqueId.length : 0}</p>
                     <p className="text-sm text-gray-600">Longitud del link</p>
