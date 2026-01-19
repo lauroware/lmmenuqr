@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPublicMenu } from '../api';
 
@@ -15,7 +15,6 @@ const PublicMenu = () => {
       try {
         setLoading(true);
         setError(null);
-
         const menuData = await getPublicMenu(uniqueId);
         setData(menuData);
       } catch (err) {
@@ -30,24 +29,20 @@ const PublicMenu = () => {
   }, [uniqueId]);
 
   const theme = data?.theme || {};
-
   const primaryColor = theme.primaryColor || '#2563eb';
 
-  const bgStyle = useMemo(() => {
-    if (theme.backgroundType === 'image' && theme.backgroundValue) {
-      return {
-        backgroundImage: `url(${theme.backgroundValue})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      };
-    }
-    return {
-      backgroundColor: theme.backgroundValue || '#f3f4f6',
-    };
-  }, [theme.backgroundType, theme.backgroundValue]);
+  const bgStyle =
+    theme.backgroundType === 'image' && theme.backgroundValue
+      ? {
+          backgroundImage: `url(${theme.backgroundValue})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }
+      : {
+          backgroundColor: theme.backgroundValue || '#f3f4f6',
+        };
 
-  // Loader
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f3f4f6' }}>
@@ -59,7 +54,6 @@ const PublicMenu = () => {
     );
   }
 
-  // Error
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f3f4f6] p-4">
@@ -77,15 +71,12 @@ const PublicMenu = () => {
   const restaurantName = data?.restaurantName || 'Menú';
   const menuItems = Array.isArray(data?.menuItems) ? data.menuItems : [];
 
-  const categories = useMemo(() => {
-    return ['All', ...new Set(menuItems.map((item) => item.category).filter(Boolean))];
-  }, [menuItems]);
+  const categories = ['All', ...new Set(menuItems.map((item) => item.category).filter(Boolean))];
 
-  const filteredItems = useMemo(() => {
-    return activeCategory === 'All'
+  const filteredItems =
+    activeCategory === 'All'
       ? menuItems
       : menuItems.filter((item) => item.category === activeCategory);
-  }, [menuItems, activeCategory]);
 
   return (
     <div className="min-h-screen" style={bgStyle}>
@@ -93,7 +84,6 @@ const PublicMenu = () => {
       <header className="bg-white/90 backdrop-blur shadow-sm sticky top-0 z-10 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center gap-3">
-            {/* Logo */}
             {theme.logoUrl ? (
               <img src={theme.logoUrl} alt="Logo" className="h-10 w-auto object-contain" />
             ) : (
@@ -111,7 +101,6 @@ const PublicMenu = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Cover */}
         {theme.coverUrl && (
           <div className="mb-6">
             <img
