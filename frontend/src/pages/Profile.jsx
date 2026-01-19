@@ -200,7 +200,6 @@ const Profile = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold text-blue-600">{profile.views}</p>
-                    <p className="text-sm text-gray-600">Vistas totales</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-green-600">{profile.uniqueId ? profile.uniqueId.length : 0}</p>

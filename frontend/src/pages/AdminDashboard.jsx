@@ -7,7 +7,7 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({
     totalItems: 0,
     categories: 0,
-    totalViews: 0,
+  
     lastUpdated: null
   });
   const [recentItems, setRecentItems] = useState([]);
@@ -30,7 +30,7 @@ const AdminDashboard = () => {
       setStats({
         totalItems: menuItems.length,
         categories,
-        totalViews: adminMenu?.views || 0,
+     
         lastUpdated: adminMenu?.updatedAt
     ? new Date(adminMenu.updatedAt).toLocaleDateString('es-AR', {
         day: '2-digit',
@@ -71,10 +71,9 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Stat title="Total de ítems" value={stats.totalItems} />
           <Stat title="Categorías" value={stats.categories} />
-          <Stat title="Vistas" value={stats.totalViews} />
           <Stat title="Última actualización" value={stats.lastUpdated} />
         </div>
 
