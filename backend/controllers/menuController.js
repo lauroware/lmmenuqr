@@ -261,6 +261,23 @@ const regenerateMenuLink = asyncHandler(async (req, res) => {
   }
 });
 
+const updateMenuTheme = asyncHandler(async (req, res) => {
+  const menu = await Menu.findOne({ admin: req.admin._id });
+
+  if (!menu) {
+    res.status(404);
+    throw new Error('Menu not found');
+  }
+
+  menu.theme = {
+    ...menu.theme,
+    ...req.body,
+  };
+
+  const updatedMenu = await menu.save();
+  res.json(updatedMenu.theme);
+});
+
 module.exports = {
   createMenu,
   getAdminMenu,
@@ -272,4 +289,5 @@ module.exports = {
   getPublicMenu,
   getQrCode,
   regenerateMenuLink,
+  updateMenuTheme,
 };

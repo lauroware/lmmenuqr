@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPublicMenu } from '../api';
 
 const PublicMenu = () => {
   const { uniqueId } = useParams();
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,6 +13,9 @@ const PublicMenu = () => {
   useEffect(() => {
     const fetchMenu = async () => {
       try {
+        setLoading(true);
+        setError(null);
+
         const menuData = await getPublicMenu(uniqueId);
         setData(menuData);
       } catch (err) {
@@ -25,14 +29,37 @@ const PublicMenu = () => {
     fetchMenu();
   }, [uniqueId]);
 
+  const theme = data?.theme || {};
+
+  const primaryColor = theme.primaryColor || '#2563eb';
+
+  const bgStyle = useMemo(() => {
+    if (theme.backgroundType === 'image' && theme.backgroundValue) {
+      return {
+        backgroundImage: `url(${theme.backgroundValue})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      };
+    }
+    return {
+      backgroundColor: theme.backgroundValue || '#f3f4f6',
+    };
+  }, [theme.backgroundType, theme.backgroundValue]);
+
+  // Loader
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f3f4f6]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" style={{ borderTopColor: '#2563eb', borderBottomColor: '#2563eb' }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#f3f4f6' }}>
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
+          style={{ borderTopColor: primaryColor, borderBottomColor: primaryColor }}
+        />
       </div>
     );
   }
 
+  // Error
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f3f4f6] p-4">
@@ -47,31 +74,18 @@ const PublicMenu = () => {
     );
   }
 
-  const { restaurantName, menuItems, theme = {} } = data || {};
+  const restaurantName = data?.restaurantName || 'Menú';
+  const menuItems = Array.isArray(data?.menuItems) ? data.menuItems : [];
 
-  const primaryColor = theme.primaryColor || '#2563eb';
+  const categories = useMemo(() => {
+    return ['All', ...new Set(menuItems.map((item) => item.category).filter(Boolean))];
+  }, [menuItems]);
 
-  // Background style (color o image)
-  const bgStyle =
-    theme.backgroundType === 'image' && theme.backgroundValue
-      ? {
-          backgroundImage: `url(${theme.backgroundValue})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }
-      : {
-          backgroundColor: theme.backgroundValue || '#f3f4f6',
-        };
-
-  // categories
-  const categories = ['All', ...new Set((menuItems || []).map(item => item.category))];
-
-  // filtered items
-  const filteredItems =
-    activeCategory === 'All'
-      ? (menuItems || [])
-      : (menuItems || []).filter(item => item.category === activeCategory);
+  const filteredItems = useMemo(() => {
+    return activeCategory === 'All'
+      ? menuItems
+      : menuItems.filter((item) => item.category === activeCategory);
+  }, [menuItems, activeCategory]);
 
   return (
     <div className="min-h-screen" style={bgStyle}>
@@ -79,13 +93,9 @@ const PublicMenu = () => {
       <header className="bg-white/90 backdrop-blur shadow-sm sticky top-0 z-10 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center gap-3">
-            {/* Logo (si existe) */}
+            {/* Logo */}
             {theme.logoUrl ? (
-              <img
-                src={theme.logoUrl}
-                alt="Logo"
-                className="h-10 w-auto object-contain"
-              />
+              <img src={theme.logoUrl} alt="Logo" className="h-10 w-auto object-contain" />
             ) : (
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -101,7 +111,7 @@ const PublicMenu = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Cover (si existe) */}
+        {/* Cover */}
         {theme.coverUrl && (
           <div className="mb-6">
             <img
@@ -116,6 +126,7 @@ const PublicMenu = () => {
         <div className="flex overflow-x-auto pb-4 mb-6 scrollbar-hide space-x-2">
           {categories.map((category) => {
             const active = activeCategory === category;
+
             return (
               <button
                 key={category}
@@ -125,11 +136,7 @@ const PublicMenu = () => {
                     ? 'text-white shadow-md transform scale-105'
                     : 'bg-white/90 text-gray-600 hover:bg-white border-gray-200'
                 }`}
-                style={
-                  active
-                    ? { backgroundColor: primaryColor, borderColor: primaryColor }
-                    : {}
-                }
+                style={active ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
               >
                 {category}
               </button>
@@ -146,11 +153,7 @@ const PublicMenu = () => {
             >
               {item.image && (
                 <div className="h-48 w-full bg-gray-200 relative overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                   {!item.available && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                       <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
@@ -163,14 +166,9 @@ const PublicMenu = () => {
 
               <div className="p-5 flex flex-col flex-grow">
                 <div className="flex justify-between items-start mb-2 gap-2">
-                  <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
-                    {item.name}
-                  </h3>
+                  <h3 className="text-lg font-bold text-gray-900 line-clamp-2">{item.name}</h3>
 
-                  <span
-                    className="font-bold text-lg whitespace-nowrap"
-                    style={{ color: primaryColor }}
-                  >
+                  <span className="font-bold text-lg whitespace-nowrap" style={{ color: primaryColor }}>
                     $
                     {typeof item.price === 'number'
                       ? item.price.toFixed(2)
@@ -178,9 +176,7 @@ const PublicMenu = () => {
                   </span>
                 </div>
 
-                <p className="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">
-                  {item.description}
-                </p>
+                <p className="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">{item.description}</p>
 
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 gap-2">
                   <span

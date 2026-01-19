@@ -29,5 +29,6 @@ router
 router.route('/regenerate-link').post(protect, regenerateMenuLink);
 router.route('/qr/:uniqueId').get(getQrCode);
 router.route('/:uniqueId').get(getPublicMenu);
+router.put('/theme', protect, updateMenuTheme);
 
 module.exports = router;
