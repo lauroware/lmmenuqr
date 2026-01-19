@@ -42,10 +42,10 @@ const Home = () => {
                 Precios
               </a>
               <Link
-                to="/signup"
+                to="/login"
                 className="bg-primary text-black px-4 py-2 rounded-xl font-semibold hover:opacity-90 transition"
               >
-                Empezar
+                Ingresar
               </Link>
             </div>
           </div>
@@ -65,14 +65,7 @@ const Home = () => {
                 Generá códigos QR únicos y ofrecé a tus clientes una experiencia sin esfuerzo.
               </p>
 
-              <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
-                <Link
-                  to="/login"
-                  className="inline-flex justify-center bg-white/5 border border-border px-6 py-3 rounded-2xl font-semibold text-white hover:bg-white/10 transition"
-                >
-                  Menu Autogestionable
-                </Link>
-              </div>
+             
             </div>
 
             <div className="mt-12 lg:mt-0">
