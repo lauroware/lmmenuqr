@@ -7,6 +7,7 @@ import PublicMenu from './pages/PublicMenu';
 import NotFound from './pages/NotFound';
 import Menu from './pages/Menu';
 import Profile from './pages/Profile';
+import Appearance from './pages/Appearance';
 import './index.css';
 import PrivateRoute from './components/PrivateRoute';
 
