@@ -64,15 +64,15 @@ const CreateMenuForm = ({ onSubmit }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Your Digital Menu</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Crea tu menú digital</h2>
         <p className="text-gray-600">
-          Set up your restaurant's digital menu to start serving customers with QR codes.
+          Configura tu menú digital para empezar a mostrarlo a tus clientes.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="restaurantName" className="block text-sm font-medium text-gray-700 mb-2">Restaurant Name *</label>
+          <label htmlFor="restaurantName" className="block text-sm font-medium text-gray-700 mb-2">Nombre del restaurante *</label>
           <input
             id="restaurantName"
             name="restaurantName"
@@ -80,13 +80,13 @@ const CreateMenuForm = ({ onSubmit }) => {
             value={formData.restaurantName}
             onChange={handleChange}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white ${errors.restaurantName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
-            placeholder="Enter your restaurant name"
+            placeholder="Ingresa el nombre de tu restaurante"
           />
           {errors.restaurantName && <p className="text-sm text-red-600 mt-1">{errors.restaurantName}</p>}
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">Menu Description *</label>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">Descripción del menú *</label>
           <textarea
             id="description"
             name="description"
@@ -94,7 +94,7 @@ const CreateMenuForm = ({ onSubmit }) => {
             onChange={handleChange}
             rows={4}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white ${errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
-            placeholder="Describe your restaurant and menu style"
+            placeholder="Describe tu restaurante y tu menú."
           />
           {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
         </div>
@@ -102,10 +102,11 @@ const CreateMenuForm = ({ onSubmit }) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-sm font-medium text-blue-900 mb-2">What happens next?</h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Your digital menu will be created with a unique URL</li>
-            <li>• You'll get a QR code to print and place on tables</li>
-            <li>• Start adding menu items to showcase your offerings</li>
-            <li>• Customers can scan the QR code to view your menu</li>
+            <li>• A tu menú digital se le asociará un unico QR</li>
+            <li>• Una vez que tengas tu código QR podrás imprimirlo y pegarlo en las mesas.</li>
+            <li>• Empieza a agregar items al menú</li>
+            <li>• Tus clientes pueden escanear el QR y ver tu menú</li>
+            <li>• Recuerda que a través de Latinmerch (www.latinmerch.com.ar), puedes solicitarnos porta qr en varios formatos, te entregamos todo listo para que empieces a usarlo</li>
           </ul>
         </div>
 
@@ -117,10 +118,10 @@ const CreateMenuForm = ({ onSubmit }) => {
           {loading ? (
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-2"></div>
-              Creating Menu...
+              Guardar Menú
             </div>
           ) : (
-            'Create Digital Menu'
+            'Menú digital creado'
           )}
         </button>
       </form>

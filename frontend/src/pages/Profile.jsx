@@ -178,8 +178,15 @@ const Profile = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Miembro desde</label>
-                  <p className="mt-1 text-lg text-gray-900">{profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'N/A'}</p>
-                </div>
+                <p className="mt-1 text-lg text-gray-900">
+  {profile.createdAt
+    ? new Date(profile.createdAt).toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    : 'N/A'}
+</p> </div>
               </div>
             </div>
 
