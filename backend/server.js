@@ -29,6 +29,8 @@ app.get('/', (req, res) => res.send('API is running...'));
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/admin', require('./routes/adminRoutes'));
+
 app.use('/api/upload', require('./routes/uploadRoutes'));
 
 app.use(notFound);

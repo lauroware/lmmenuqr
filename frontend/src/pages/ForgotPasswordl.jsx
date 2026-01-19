@@ -1,38 +1,30 @@
-    import React, { useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { resetPassword } from '../api';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { forgotPassword } from '../api';
 
-const ResetPassword = () => {
-  const { token } = useParams();
-  const navigate = useNavigate();
-
-  const [password, setPassword] = useState('');
-  const [password2, setPassword2] = useState('');
+const ForgotPassword = () => {
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState('');
   const [msg, setMsg] = useState('');
+  const [err, setErr] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr('');
     setMsg('');
 
-    if (!password || password.length < 6) {
-      setErr('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
-    if (password !== password2) {
-      setErr('Las contraseñas no coinciden');
+    if (!email.trim()) {
+      setErr('Ingresá tu email');
       return;
     }
 
     setLoading(true);
     try {
-      const res = await resetPassword(token, password);
-      setMsg(res?.message || 'Contraseña actualizada ✅');
-      setTimeout(() => navigate('/login'), 800);
+      const res = await forgotPassword(email.trim());
+      // Backend responde genérico (buena práctica)
+      setMsg(res?.message || 'Si el email existe, se enviará un link.');
     } catch (e2) {
-      setErr(e2?.response?.data?.message || 'No se pudo resetear la contraseña');
+      setErr(e2?.response?.data?.message || 'No se pudo procesar la solicitud');
     } finally {
       setLoading(false);
     }
@@ -42,9 +34,9 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          <h1 className="text-2xl font-bold text-gray-900">Nueva contraseña</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Olvidé mi contraseña</h1>
           <p className="text-sm text-gray-600 mt-2">
-            Elegí una nueva contraseña para tu cuenta.
+            Te mandamos un link para crear una nueva.
           </p>
 
           {err && (
@@ -62,29 +54,15 @@ const ResetPassword = () => {
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nueva contraseña
+                Email
               </label>
               <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white border-gray-300"
-                placeholder="********"
-                autoComplete="new-password"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Repetir contraseña
-              </label>
-              <input
-                type="password"
-                value={password2}
-                onChange={(e) => setPassword2(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white border-gray-300"
-                placeholder="********"
-                autoComplete="new-password"
+                placeholder="tu@email.com"
+                autoComplete="email"
               />
             </div>
 
@@ -93,7 +71,7 @@ const ResetPassword = () => {
               disabled={loading}
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50"
             >
-              {loading ? 'Guardando...' : 'Guardar nueva contraseña'}
+              {loading ? 'Enviando...' : 'Enviar link'}
             </button>
           </form>
 
@@ -108,4 +86,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default ForgotPassword;

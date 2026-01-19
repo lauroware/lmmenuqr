@@ -11,4 +11,14 @@ router.post('/register', registerAdmin);
 router.get('/profile', protect, getAdminProfile);
 router.put('/profile', protect, updateAdminProfile);
 
+const {
+  forgotPassword,
+  resetPassword,
+} = require('../controllers/adminController');
+
+// 🔓 Público
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
+
+
 module.exports = router;

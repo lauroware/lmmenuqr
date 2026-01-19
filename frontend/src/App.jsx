@@ -10,6 +10,9 @@ import Profile from './pages/Profile';
 import Appearance from './pages/Appearance';
 import './index.css';
 import PrivateRoute from './components/PrivateRoute';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/menu/:uniqueId" element={<PublicMenu />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password/:token" element={<ResetPassword />} />
+
         
 
         {/* Protected Admin Routes */}

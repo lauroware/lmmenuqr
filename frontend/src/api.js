@@ -120,3 +120,13 @@ export const updateMenuTheme = async (themeData) => {
   const response = await api.put('/menu/theme', themeData);
   return response.data;
 };
+
+export const forgotPassword = async (email) => {
+  const response = await api.post('/admin/forgot-password', { email });
+  return response.data;
+};
+
+export const resetPassword = async (token, password) => {
+  const response = await api.post(`/admin/reset-password/${token}`, { password });
+  return response.data;
+};
