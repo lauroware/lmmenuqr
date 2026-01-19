@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-const menuSchema = new mongoose.Schema(
+const menuSchema = mongoose.Schema(
   {
     admin: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Admin',
       required: true,
+      ref: 'Admin',
     },
     uniqueId: {
       type: String,
@@ -17,15 +17,11 @@ const menuSchema = new mongoose.Schema(
       required: true,
     },
 
-    // 👇 APARIENCIA (AHORA SÍ)
+    // ✅ Theme (Apariencia)
     theme: {
-      primaryColor: { type: String, default: '#2563eb' },
-      backgroundType: {
-        type: String,
-        enum: ['color', 'image'],
-        default: 'color',
-      },
-      backgroundValue: { type: String, default: '#ffffff' },
+      primaryColor: { type: String, default: '#2563eb' }, // azul
+      backgroundType: { type: String, enum: ['color', 'image'], default: 'color' },
+      backgroundValue: { type: String, default: '#f3f4f6' }, // color o URL si es image
       logoUrl: { type: String, default: '' },
       coverUrl: { type: String, default: '' },
     },
@@ -35,4 +31,6 @@ const menuSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Menu', menuSchema);
+const Menu = mongoose.model('Menu', menuSchema);
+
+module.exports = Menu;
