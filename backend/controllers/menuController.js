@@ -201,13 +201,20 @@ const getPublicMenu = asyncHandler(async (req, res) => {
 
   if (menu) {
     const menuItems = await MenuItem.find({ menu: menu._id });
-    res.json({ restaurantName: menu.restaurantName, menuItems });
+
+    res.json({
+      restaurantName: menu.restaurantName,
+      uniqueId: menu.uniqueId,
+      theme: menu.theme || {},
+      menuItems,
+    });
   } else {
     console.error('Error 404: Menu not found');
     res.status(404);
     throw new Error('Menu not found');
   }
 });
+
 
 // @desc    Generate QR code for the menu
 // @route   GET /api/menu/qr/:uniqueId

@@ -115,3 +115,8 @@ export const getMenuAnalytics = async () => {
   const response = await api.get('/admin/analytics');
   return response.data;
 };
+
+export const updateMenuTheme = async (themeData) => {
+  const response = await api.put('/menu/theme', themeData);
+  return response.data;
+};

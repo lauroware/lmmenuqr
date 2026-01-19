@@ -18,12 +18,13 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/menu/:uniqueId" element={<PublicMenu />} />
+        
 
         {/* Protected Admin Routes */}
         <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
         <Route path="/admin/menu" element={<PrivateRoute><Menu /></PrivateRoute>} />
         <Route path="/admin/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-
+<Route path="/admin/appearance" element={<Appearance />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

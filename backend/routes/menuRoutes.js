@@ -14,6 +14,9 @@ const {
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+const { updateMenuTheme } = require('../controllers/menuThemeController');
+
+router.put('/theme', protect, updateMenuTheme);
 
 router.route('/').post(protect, createMenu).get(protect, getAdminMenu);
 router.route('/items').post(protect, createMenuItem).get(protect, getMenuItems);

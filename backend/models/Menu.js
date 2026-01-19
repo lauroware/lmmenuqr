@@ -16,6 +16,15 @@ const menuSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+
+    // ✅ Theme dentro del schema (no en parámetros)
+    theme: {
+      primaryColor: { type: String, default: '#2563eb' },
+      backgroundType: { type: String, enum: ['color', 'image'], default: 'color' },
+      backgroundValue: { type: String, default: '#ffffff' },
+      logoUrl: { type: String, default: '' },
+      coverUrl: { type: String, default: '' },
+    },
   },
   {
     timestamps: true,
