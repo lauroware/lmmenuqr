@@ -32,7 +32,11 @@ const AdminDashboard = () => {
         categories,
         totalViews: adminMenu?.views || 0,
         lastUpdated: adminMenu?.updatedAt
-          ? new Date(adminMenu.updatedAt).toLocaleDateString()
+    ? new Date(adminMenu.updatedAt).toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
           : 'Nunca'
       });
 
