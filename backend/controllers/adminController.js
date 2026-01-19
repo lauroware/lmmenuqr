@@ -2,6 +2,71 @@ const asyncHandler = require('express-async-handler');
 const generateToken = require('../utils/generateToken');
 const Admin = require('../models/Admin');
 
+
+const asyncHandler = require('express-async-handler');
+const crypto = require('crypto');
+const Admin = require('../models/Admin');
+
+// @desc    Solicitar reset de contraseña
+// @route   POST /api/admin/forgot-password
+// @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const admin = await Admin.findOne({ email });
+  if (!admin) {
+    // No revelamos si existe o no (buena práctica)
+    return res.json({ message: 'Si el email existe, se enviará un link.' });
+  }
+
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  admin.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  admin.resetPasswordExpires = Date.now() + 1000 * 60 * 15; // 15 min
+
+  await admin.save();
+
+  // 👉 por ahora solo devolvemos el token (DESPUÉS mandamos mail)
+  res.json({
+    message: 'Token generado',
+    resetToken,
+  });
+});
+
+// @desc    Resetear contraseña
+// @route   POST /api/admin/reset-password/:token
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const admin = await Admin.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!admin) {
+    res.status(400);
+    throw new Error('Token inválido o expirado');
+  }
+
+  admin.password = req.body.password;
+  admin.resetPasswordToken = undefined;
+  admin.resetPasswordExpires = undefined;
+
+  await admin.save();
+
+  res.json({ message: 'Contraseña actualizada correctamente' });
+});
+
+
+
 // @desc    Auth admin & get token
 // @route   POST /api/admin/login
 // @access  Public
@@ -107,4 +172,7 @@ const updateAdminProfile = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { authAdmin, registerAdmin, getAdminProfile, updateAdminProfile };
+module.exports = { authAdmin, registerAdmin, getAdminProfile, updateAdminProfile,
+  forgotPassword,
+  resetPassword,
+};
