@@ -279,7 +279,7 @@ const Home = () => {
           <h2 className="text-3xl md:text-4xl font-bold">¿Listo para digitalizar tu menú?</h2>
           <div className="mt-10 flex justify-center">
             <Link
-              to="/signup"
+              to="#"
               className="bg-primary text-black font-bold py-4 px-8 rounded-2xl text-lg hover:opacity-90 transition"
             >
               Contactanos

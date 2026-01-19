@@ -130,3 +130,10 @@ export const resetPassword = async (token, password) => {
   const response = await api.post(`/admin/reset-password/${token}`, { password });
   return response.data;
 };
+
+export const reorderMenuItems = async (items) => {
+  // items: [{ _id, order }]
+  const response = await api.put('/menu/items/reorder', { items });
+  return response.data;
+};
+

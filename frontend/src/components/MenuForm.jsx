@@ -33,13 +33,22 @@ const MenuForm = ({ onSubmit, initialData = {}, onCancel }) => {
   }, [initialData]);
 
   const categories = [
-    'Aperitivos',
+    'Desayonos y Meriendas',
+    'Entradas',
     'Principales',
-    'Ensaldas',
-    'Bebidas',
     'Especiales',
+    'Guarniciones',
+    'Combos',
+    'Ensaldas',
+    'Pastas',
+    'Pizzas',
+    'Carnes',
+    'Pescados y Mariscos',  
     'Sopas',
-    'Especiales'
+    'Postres',
+    'Bebidas',
+    'Vinos y Licores',
+
   ];
 
   const availableTags = [
@@ -50,7 +59,11 @@ const MenuForm = ({ onSubmit, initialData = {}, onCancel }) => {
     'Lo mas vendido',
     'Especialidad del Chef',
     'Estacional',
-    'Orgánico'
+    'Orgánico',
+    'Sin Lactosa',
+    'Bajo en Calorías',
+    'Sin Azúcar',
+    'Apto para Niños'
   ];
 
   const validateForm = () => {

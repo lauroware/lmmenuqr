@@ -1,4 +1,19 @@
 const Menu = require('../models/Menu');
+const last = await MenuItem.findOne({ menu: menu._id }).sort({ order: -1 }).select('order');
+const nextOrder = last ? last.order + 1 : 0;
+
+const menuItemData = {
+  menu: menu._id,
+  name,
+  description,
+  price,
+  category,
+  image,
+  tags: tags || [],
+  available: available !== undefined ? available : true,
+  order: nextOrder, // 👈
+};
+
 
 // PUT /api/menu/theme
 // Protegido (admin logueado)

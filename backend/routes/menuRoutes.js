@@ -24,6 +24,8 @@ router.put('/theme', protect, updateMenuTheme);
 
 router.route('/items').post(protect, createMenuItem).get(protect, getMenuItems);
 router.route('/items/:id').get(protect, getMenuItemById).put(protect, updateMenuItem).delete(protect, deleteMenuItem);
+router.put('/items/reorder', protect, reorderMenuItems);
+
 
 router.post('/regenerate-link', protect, regenerateMenuLink);
 router.get('/qr/:uniqueId', getQrCode);

@@ -92,6 +92,7 @@ const createMenuItem = asyncHandler(async (req, res) => {
   }
 });
 
+const menuItems = await MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 });
 
 // @desc    Get all menu items for logged-in admin's menu
 // @route   GET /api/menu/items
@@ -108,6 +109,34 @@ const getMenuItems = asyncHandler(async (req, res) => {
   const menuItems = await MenuItem.find({ menu: menu._id });
   res.json(menuItems);
 });
+
+const reorderMenuItems = asyncHandler(async (req, res) => {
+  const menu = await Menu.findOne({ admin: req.admin._id });
+  if (!menu) {
+    res.status(404);
+    throw new Error('Menu not found for this admin.');
+  }
+
+  const { items } = req.body; 
+  // items: [{ _id, order }]
+
+  if (!Array.isArray(items)) {
+    res.status(400);
+    throw new Error('Invalid payload');
+  }
+
+  // Actualizamos solo ítems del menú del admin
+  const ops = items.map((it) => ({
+    updateOne: {
+      filter: { _id: it._id, menu: menu._id },
+      update: { $set: { order: it.order } },
+    },
+  }));
+
+  await MenuItem.bulkWrite(ops);
+  res.json({ message: 'Order updated' });
+});
+
 
 // @desc    Get single menu item by ID
 // @route   GET /api/menu/items/:id
@@ -330,4 +359,5 @@ module.exports = {
   getQrCode,
   regenerateMenuLink,
   updateMenuTheme,
+  reorderMenuItems,
 };
