@@ -269,14 +269,54 @@ const updateMenuTheme = asyncHandler(async (req, res) => {
     throw new Error('Menu not found');
   }
 
-  menu.theme = {
-    ...menu.theme,
-    ...req.body,
-  };
+  // ✅ Sanitizamos (acá suelen venir los 500 por enum)
+  const {
+    primaryColor,
+    backgroundType,
+    backgroundValue,
+    logoUrl,
+    coverUrl,
+  } = req.body || {};
 
-  const updatedMenu = await menu.save();
-  res.json(updatedMenu.theme);
+  const next = { ...(menu.theme || {}) };
+
+  if (typeof primaryColor === 'string') next.primaryColor = primaryColor.trim();
+
+  if (typeof backgroundType === 'string') {
+    const bt = backgroundType.trim().toLowerCase();
+    if (!['color', 'image'].includes(bt)) {
+      // en vez de 500, devolvemos 400 claro
+      res.status(400);
+      throw new Error(`backgroundType inválido: "${backgroundType}". Usá "color" o "image"`);
+    }
+    next.backgroundType = bt;
+  }
+
+  if (typeof backgroundValue === 'string') next.backgroundValue = backgroundValue.trim();
+  if (typeof logoUrl === 'string') next.logoUrl = logoUrl.trim();
+  if (typeof coverUrl === 'string') next.coverUrl = coverUrl.trim();
+
+  menu.theme = next;
+
+  try {
+    await menu.save();
+  } catch (err) {
+    // ✅ Esto te va a mostrar EL motivo real en Render logs
+    console.error('❌ Theme save error:', err);
+
+    // si es ValidationError, devolvemos 400 con detalle
+    if (err.name === 'ValidationError') {
+      res.status(400);
+      throw new Error(err.message);
+    }
+
+    res.status(500);
+    throw new Error('Error guardando theme');
+  }
+
+  res.json(menu.theme);
 });
+
 
 module.exports = {
   createMenu,

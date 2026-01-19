@@ -17,20 +17,16 @@ const menuSchema = mongoose.Schema(
       required: true,
     },
 
-    // ✅ Theme (Apariencia)
+    // ✅ Apariencia
     theme: {
-      primaryColor: { type: String, default: '#2563eb' }, // azul
+      primaryColor: { type: String, default: '#2563eb' },
       backgroundType: { type: String, enum: ['color', 'image'], default: 'color' },
       backgroundValue: { type: String, default: '#f3f4f6' }, // color o URL si es image
       logoUrl: { type: String, default: '' },
       coverUrl: { type: String, default: '' },
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-const Menu = mongoose.model('Menu', menuSchema);
-
-module.exports = Menu;
+module.exports = mongoose.model('Menu', menuSchema);

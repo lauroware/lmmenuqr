@@ -10,25 +10,25 @@ const {
   getPublicMenu,
   getQrCode,
   regenerateMenuLink,
+  updateMenuTheme, // ✅
 } = require('../controllers/menuController');
+
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
-const { updateMenuTheme } = require('../controllers/menuThemeController');
-
-router.put('/theme', protect, updateMenuTheme);
 
 router.route('/').post(protect, createMenu).get(protect, getAdminMenu);
-router.route('/items').post(protect, createMenuItem).get(protect, getMenuItems);
-router
-  .route('/items/:id')
-  .get(protect, getMenuItemById)
-  .put(protect, updateMenuItem)
-  .delete(protect, deleteMenuItem);
 
-router.route('/regenerate-link').post(protect, regenerateMenuLink);
-router.route('/qr/:uniqueId').get(getQrCode);
-router.route('/:uniqueId').get(getPublicMenu);
+// ✅ tiene que ir ANTES de /:uniqueId
 router.put('/theme', protect, updateMenuTheme);
+
+router.route('/items').post(protect, createMenuItem).get(protect, getMenuItems);
+router.route('/items/:id').get(protect, getMenuItemById).put(protect, updateMenuItem).delete(protect, deleteMenuItem);
+
+router.post('/regenerate-link', protect, regenerateMenuLink);
+router.get('/qr/:uniqueId', getQrCode);
+
+// ✅ SIEMPRE al final
+router.get('/:uniqueId', getPublicMenu);
 
 module.exports = router;
