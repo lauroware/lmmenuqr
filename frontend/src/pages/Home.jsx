@@ -61,22 +61,16 @@ const Home = () => {
                 Menús digitales hechos <span className="text-primary">simples</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg text-white/70">
-                Creá menús digitales simples y autogestionables para tu restaurante u hotel.
+                Creá menús digitales simples con opciones autogestionables para tu restaurante u hotel.
                 Generá códigos QR únicos y ofrecé a tus clientes una experiencia sin esfuerzo.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
                 <Link
-                  to="/signup"
-                  className="inline-flex justify-center bg-primary text-black px-6 py-3 rounded-2xl font-semibold hover:opacity-90 transition"
-                >
-                  Crear mi menú
-                </Link>
-                <Link
                   to="/login"
                   className="inline-flex justify-center bg-white/5 border border-border px-6 py-3 rounded-2xl font-semibold text-white hover:bg-white/10 transition"
                 >
-                  Entrar al panel
+                  Menu Autogestionable
                 </Link>
               </div>
             </div>
@@ -105,7 +99,7 @@ const Home = () => {
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white">Funciones potentes</h2>
             <p className="mt-4 text-lg text-white/70 max-w-3xl mx-auto">
-              Todo lo que necesitás para crear, administrar y compartir tu menú digital.
+              Te ofrecemos las mejores opciones para que puedas crear, administrar y compartir tu menú digital.
             </p>
           </div>
 
@@ -119,22 +113,17 @@ const Home = () => {
               {
                 icon: "fa-edit",
                 title: "Gestión fácil del menú",
-                desc: "Creá, editá y organizá ítems con categorías, descripciones, precios e imágenes.",
+                desc: "En la opción autogestionable creá, editá y organizá ítems con categorías, descripciones, precios e imágenes.",
               },
               {
                 icon: "fa-mobile-alt",
                 title: "Optimizado para móvil",
-                desc: "Se adapta a cualquier dispositivo para una experiencia perfecta en celulares y tablets.",
+                desc: "Nuestros sitios se adaptan a cualquier dispositivo para una experiencia perfecta en celulares y tablets.",
               },
               {
                 icon: "fa-tags",
                 title: "Etiquetas de ítems",
                 desc: "Marcá vegetariano, picante, más vendido o no disponible para mejorar la experiencia.",
-              },
-              {
-                icon: "fa-chart-bar",
-                title: "Analíticas",
-                desc: "Medí vistas y escaneos para entender qué miran más tus clientes.",
               },
             ].map((f) => (
               <div
@@ -162,7 +151,7 @@ const Home = () => {
       <section id="how-it-works" className="py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-white">Cómo funciona Latin Nexo Menu QR</h2>
+            <h2 className="text-3xl font-bold text-white">Cómo funciona Latin Nexo Menu QR Autogestionable</h2>
             <p className="mt-4 text-lg text-white/70 max-w-3xl mx-auto">
               Tené tu menú digital funcionando en solo unos pocos pasos simples.
             </p>
@@ -176,7 +165,7 @@ const Home = () => {
                     {n}
                   </div>
                   <h3 className="text-2xl font-bold text-white">
-                    {n === 1 && "Creá tu cuenta"}
+                    {n === 1 && "Creamos tu cuenta"}
                     {n === 2 && "Generá el código QR"}
                     {n === 3 && "Colocá los códigos QR"}
                     {n === 4 && "Los clientes escanean y ven"}
