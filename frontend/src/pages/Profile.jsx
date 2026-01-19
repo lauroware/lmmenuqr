@@ -186,7 +186,8 @@ const Profile = () => {
         year: 'numeric',
       })
     : 'N/A'}
-</p> </div>
+</p>
+ </div>
               </div>
             </div>
 
