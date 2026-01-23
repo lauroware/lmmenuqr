@@ -1,10 +1,7 @@
 const asyncHandler = require('express-async-handler');
-const generateToken = require('../utils/generateToken');
-const Admin = require('../models/Admin');
-
-
-const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
+
+const generateToken = require('../utils/generateToken');
 const Admin = require('../models/Admin');
 
 // @desc    Solicitar reset de contraseña
@@ -64,8 +61,6 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   res.json({ message: 'Contraseña actualizada correctamente' });
 });
-
-
 
 // @desc    Auth admin & get token
 // @route   POST /api/admin/login
@@ -131,7 +126,7 @@ const registerAdmin = asyncHandler(async (req, res) => {
 // @access  Private
 const getAdminProfile = asyncHandler(async (req, res) => {
   const admin = await Admin.findById(req.admin._id).select('-password');
-  
+
   if (admin) {
     res.json(admin);
   } else {
@@ -172,7 +167,11 @@ const updateAdminProfile = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { authAdmin, registerAdmin, getAdminProfile, updateAdminProfile,
+module.exports = {
+  authAdmin,
+  registerAdmin,
+  getAdminProfile,
+  updateAdminProfile,
   forgotPassword,
   resetPassword,
 };

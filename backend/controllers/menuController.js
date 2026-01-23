@@ -3,6 +3,8 @@ const QRCode = require('qrcode');
 const Menu = require('../models/Menu');
 const MenuItem = require('../models/MenuItem');
 const generateUniqueId = require('../utils/generateUniqueId');
+const asyncHandler = require('express-async-handler');
+
 
 // @desc    Create a menu for the logged-in admin
 // @route   POST /api/menu
@@ -62,34 +64,33 @@ const createMenuItem = asyncHandler(async (req, res) => {
   const menu = await Menu.findOne({ admin: req.admin._id });
 
   if (!menu) {
-    console.error('Error 404: Menu not found for this admin. Create a menu first.');
     res.status(404);
     throw new Error('Menu not found for this admin. Create a menu first.');
   }
 
-  try {
-    const { name, description, price, category, image, tags, available } = req.body;
+  const { name, description, price, category, image, tags, available } = req.body;
 
-    const menuItemData = {
-      menu: menu._id,
-      name,
-      description,
-      price,
-      category,
-      image,
-      tags: tags || [],
-      available: available !== undefined ? available : true,
-    };
+  // ✅ calcular next order
+  const last = await MenuItem.findOne({ menu: menu._id })
+    .sort({ order: -1 })
+    .select('order');
 
-    const menuItem = new MenuItem(menuItemData);
-    const createdMenuItem = await menuItem.save();
-    res.status(201).json(createdMenuItem);
-  } catch (error) {
-    console.error('Error creating menu item:', error);
-    console.error('Validation errors:', error.errors);
-    res.status(400);
-    throw new Error('Invalid menu item data');
-  }
+  const nextOrder = last?.order !== undefined ? last.order + 1 : 0;
+
+  const menuItemData = {
+    menu: menu._id,
+    name,
+    description,
+    price,
+    category,
+    image,
+    tags: tags || [],
+    available: available !== undefined ? available : true,
+    order: nextOrder,
+  };
+
+  const menuItem = await MenuItem.create(menuItemData);
+  res.status(201).json(menuItem);
 });
 
 const menuItems = await MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 });
