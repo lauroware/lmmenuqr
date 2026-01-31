@@ -3,7 +3,6 @@ const QRCode = require('qrcode');
 const Menu = require('../models/Menu');
 const MenuItem = require('../models/MenuItem');
 const generateUniqueId = require('../utils/generateUniqueId');
-const asyncHandler = require('express-async-handler');
 
 
 // @desc    Create a menu for the logged-in admin
@@ -107,7 +106,7 @@ const getMenuItems = asyncHandler(async (req, res) => {
     throw new Error('Menu not found for this admin.');
   }
 
-  const menuItems = await MenuItem.find({ menu: menu._id });
+  const menuItems = await MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 });
   res.json(menuItems);
 });
 
@@ -230,7 +229,7 @@ const getPublicMenu = asyncHandler(async (req, res) => {
   const menu = await Menu.findOne({ uniqueId: req.params.uniqueId });
 
   if (menu) {
-    const menuItems = await MenuItem.find({ menu: menu._id });
+    const menuItems = await MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 });
 
     res.json({
       restaurantName: menu.restaurantName,

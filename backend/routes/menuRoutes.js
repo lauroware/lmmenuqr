@@ -11,6 +11,7 @@ const {
   getQrCode,
   regenerateMenuLink,
   updateMenuTheme, // ✅
+  reorderMenuItems,
 } = require('../controllers/menuController');
 
 const { protect } = require('../middleware/authMiddleware');
