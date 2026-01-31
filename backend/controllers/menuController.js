@@ -92,6 +92,7 @@ const createMenuItem = asyncHandler(async (req, res) => {
   res.status(201).json(menuItem);
 });
 
+
 const menuItems = await MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 });
 
 // @desc    Get all menu items for logged-in admin's menu
@@ -101,14 +102,17 @@ const getMenuItems = asyncHandler(async (req, res) => {
   const menu = await Menu.findOne({ admin: req.admin._id });
 
   if (!menu) {
-    console.error('Error 404: Menu not found for this admin.');
     res.status(404);
     throw new Error('Menu not found for this admin.');
   }
 
-  const menuItems = await MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 });
+  const menuItems = await MenuItem
+    .find({ menu: menu._id })
+    .sort({ order: 1, createdAt: 1 });
+
   res.json(menuItems);
 });
+
 
 const reorderMenuItems = asyncHandler(async (req, res) => {
   const menu = await Menu.findOne({ admin: req.admin._id });
