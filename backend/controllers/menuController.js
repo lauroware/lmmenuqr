@@ -93,8 +93,6 @@ const createMenuItem = asyncHandler(async (req, res) => {
 });
 
 
-const menuItems = await MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 });
-
 // @desc    Get all menu items for logged-in admin's menu
 // @route   GET /api/menu/items
 // @access  Private
