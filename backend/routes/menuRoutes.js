@@ -10,7 +10,7 @@ const {
   getPublicMenu,
   getQrCode,
   regenerateMenuLink,
-  updateMenuTheme, // ✅
+  updateMenuTheme,
   reorderMenuItems,
 } = require('../controllers/menuController');
 
@@ -20,20 +20,22 @@ const router = express.Router();
 
 router.route('/').post(protect, createMenu).get(protect, getAdminMenu);
 
-// ✅ tiene que ir ANTES de /:uniqueId
+// ✅ theme antes de /:uniqueId
 router.put('/theme', protect, updateMenuTheme);
 
-router.route('/items').post(protect, createMenuItem).get(protect, getMenuItems);
-router.route('/items/:id').get(protect, getMenuItemById).put(protect, updateMenuItem).delete(protect, deleteMenuItem);
+// ✅ reorder antes de /:uniqueId
 router.put('/items/reorder', protect, reorderMenuItems);
 
-
-
+router.route('/items').post(protect, createMenuItem).get(protect, getMenuItems);
+router.route('/items/:id')
+  .get(protect, getMenuItemById)
+  .put(protect, updateMenuItem)
+  .delete(protect, deleteMenuItem);
 
 router.post('/regenerate-link', protect, regenerateMenuLink);
 router.get('/qr/:uniqueId', getQrCode);
 
-// ✅ SIEMPRE al final
+// ✅ último SIEMPRE
 router.get('/:uniqueId', getPublicMenu);
 
 module.exports = router;
