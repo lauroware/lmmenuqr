@@ -66,7 +66,7 @@ const AdminDashboard = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Panel</h1>
           <p className="mt-2 text-gray-600">
-            ¡Bienvenido de nuevo! Acá tenés un resumen del rendimiento de tu menú digital.
+            ¡Bienvenido de nuevo! Acá tenés un resumen de tu menú digital.
           </p>
         </div>
 

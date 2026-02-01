@@ -4,6 +4,8 @@ import MenuForm from '../components/MenuForm';
 import MenuList from '../components/MenuList';
 import CreateMenuForm from '../components/CreateMenuForm';
 import { getMenuItems, createMenuItem, updateMenuItem, deleteMenuItem, uploadImage, createMenu, getAdminMenu } from '../api';
+import { reorderMenuItems } from '../api';
+
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -213,6 +215,39 @@ const Menu = () => {
       </div>
     </AdminLayout>
   );
+};
+
+const moveItem = async (id, direction) => {
+  // direction: -1 arriba, +1 abajo
+  const arr = [...items].sort((a,b) => (a.order ?? 0) - (b.order ?? 0) || new Date(a.createdAt) - new Date(b.createdAt));
+  const idx = arr.findIndex(x => x._id === id);
+  if (idx === -1) return;
+
+  const swapWith = idx + direction;
+  if (swapWith < 0 || swapWith >= arr.length) return;
+
+  // swap orders
+  const a = arr[idx];
+  const b = arr[swapWith];
+
+  const newAOrder = b.order ?? swapWith;
+  const newBOrder = a.order ?? idx;
+
+  const payload = [
+    { _id: a._id, order: newAOrder },
+    { _id: b._id, order: newBOrder },
+  ];
+
+  // Optimista: actualizá estado local primero (opcional)
+  setItems(prev => prev.map(it => {
+    const f = payload.find(p => p._id === it._id);
+    return f ? { ...it, order: f.order } : it;
+  }));
+
+  await reorderMenuItems(payload);
+
+  // recargar items para asegurar orden real (recomendado)
+  await fetchItems();
 };
 
 export default Menu;
