@@ -68,16 +68,19 @@ Si no fuiste vos, ignorá este correo.`;
 
     return res.json(genericMsg);
   } catch (err) {
-    console.error('❌ Error enviando email reset:', err);
+  console.error('❌ Error enviando email reset:', err);
 
-    // Importante: no dejes token guardado si no se pudo mandar mail
-    admin.resetPasswordToken = undefined;
-    admin.resetPasswordExpires = undefined;
-    await admin.save();
+  admin.resetPasswordToken = undefined;
+  admin.resetPasswordExpires = undefined;
+  await admin.save();
 
-    res.status(500);
-    throw new Error('No se pudo enviar el email de recuperación');
-  }
+  return res.status(500).json({
+    message: 'No se pudo enviar el email de recuperación',
+    detail: err?.message || String(err),
+    code: err?.code || null,
+    response: err?.response || null,
+  });
+}
 });
 
 
