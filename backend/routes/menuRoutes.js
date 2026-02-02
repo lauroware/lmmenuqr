@@ -11,7 +11,7 @@ const {
   getQrCode,
   regenerateMenuLink,
   updateMenuTheme,
-  reorderMenuItems,
+  reorderMenuItems, // ✅ IMPORTANTE
 } = require('../controllers/menuController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -23,10 +23,13 @@ router.route('/').post(protect, createMenu).get(protect, getAdminMenu);
 // ✅ theme antes de /:uniqueId
 router.put('/theme', protect, updateMenuTheme);
 
-// ✅ reorder antes de /:uniqueId
+// ✅ reorder ANTES de /items/:id (por seguridad de matching)
 router.put('/items/reorder', protect, reorderMenuItems);
 
-router.route('/items').post(protect, createMenuItem).get(protect, getMenuItems);
+router.route('/items')
+  .post(protect, createMenuItem)
+  .get(protect, getMenuItems);
+
 router.route('/items/:id')
   .get(protect, getMenuItemById)
   .put(protect, updateMenuItem)
@@ -35,7 +38,7 @@ router.route('/items/:id')
 router.post('/regenerate-link', protect, regenerateMenuLink);
 router.get('/qr/:uniqueId', getQrCode);
 
-// ✅ último SIEMPRE
+// ✅ al final
 router.get('/:uniqueId', getPublicMenu);
 
 module.exports = router;
