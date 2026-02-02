@@ -1,20 +1,23 @@
 const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
-
 const generateToken = require('../utils/generateToken');
 const Admin = require('../models/Admin');
+const sendEmail = require('../utils/sendemail');
 
+// @desc    Solicitar reset de contraseña
+// @route   POST /api/admin/forgot-password
+// @access  Public
 // @desc    Solicitar reset de contraseña
 // @route   POST /api/admin/forgot-password
 // @access  Public
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
+  // Siempre respondemos igual (seguridad)
+  const genericMsg = { message: 'Si el email existe, se enviará un link.' };
+
   const admin = await Admin.findOne({ email });
-  if (!admin) {
-    // No revelamos si existe o no (buena práctica)
-    return res.json({ message: 'Si el email existe, se enviará un link.' });
-  }
+  if (!admin) return res.json(genericMsg);
 
   const resetToken = crypto.randomBytes(32).toString('hex');
 
@@ -24,15 +27,57 @@ const forgotPassword = asyncHandler(async (req, res) => {
     .digest('hex');
 
   admin.resetPasswordExpires = Date.now() + 1000 * 60 * 15; // 15 min
-
   await admin.save();
 
-  // 👉 por ahora solo devolvemos el token (DESPUÉS mandamos mail)
-  res.json({
-    message: 'Token generado',
-    resetToken,
-  });
+  // Link al front (tu React)
+  const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const resetUrl = `${frontend.replace(/\/$/, '')}/reset-password/${resetToken}`;
+
+  const subject = 'Recuperar contraseña - MenuQR';
+  const text =
+`Hola ${admin.name || ''}
+
+Recibimos un pedido para resetear tu contraseña.
+
+Abrí este link para crear una nueva:
+${resetUrl}
+
+Este link vence en 15 minutos.
+Si no fuiste vos, ignorá este correo.`;
+
+  // Opcional: HTML lindo (si querés)
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.4">
+      <h2>Recuperar contraseña</h2>
+      <p>Hola ${admin.name || ''}</p>
+      <p>Hacé click para crear una nueva contraseña (vence en <b>15 minutos</b>):</p>
+      <p><a href="${resetUrl}" target="_blank">${resetUrl}</a></p>
+      <p>Si no fuiste vos, ignorá este correo.</p>
+    </div>
+  `;
+
+  try {
+    await sendEmail({
+      to: admin.email,
+      subject,
+      text,
+      html,
+    });
+
+    return res.json(genericMsg);
+  } catch (err) {
+    console.error('❌ Error enviando email reset:', err);
+
+    // Importante: no dejes token guardado si no se pudo mandar mail
+    admin.resetPasswordToken = undefined;
+    admin.resetPasswordExpires = undefined;
+    await admin.save();
+
+    res.status(500);
+    throw new Error('No se pudo enviar el email de recuperación');
+  }
 });
+
 
 // @desc    Resetear contraseña
 // @route   POST /api/admin/reset-password/:token
