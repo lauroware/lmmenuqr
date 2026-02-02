@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
-const sendEmail = require('../utils/sendemail');
+const sendEmail = require('../utils/sendEmail');
 const generateToken = require('../utils/generateToken');
 const Admin = require('../models/Admin');
 
