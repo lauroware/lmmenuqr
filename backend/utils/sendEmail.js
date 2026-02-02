@@ -17,4 +17,6 @@ async function sendEmail({ to, subject, html }) {
   });
 }
 
+//probando lpm
+
 module.exports = sendEmail;
