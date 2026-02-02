@@ -1,8 +1,9 @@
 const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
+const sendEmail = require('../utils/sendemail');
 const generateToken = require('../utils/generateToken');
 const Admin = require('../models/Admin');
-const sendEmail = require('../utils/sendemail');
+
 
 // @desc    Solicitar reset de contraseña
 // @route   POST /api/admin/forgot-password
