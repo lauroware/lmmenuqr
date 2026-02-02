@@ -154,13 +154,12 @@ const Menu = () => {
       const b = arr[swapWith];
 
       // definimos orders “seguros”
-      const aOrder = a.order ?? idx;
-      const bOrder = b.order ?? swapWith;
+  // ✅ forzamos un ranking real aunque estén todos en 0
+const payload = [
+  { _id: a._id, order: swapWith },
+  { _id: b._id, order: idx },
+];
 
-      const payload = [
-        { _id: a._id, order: bOrder },
-        { _id: b._id, order: aOrder },
-      ];
 
       // ✅ optimista local (instantáneo)
       setMenuItems((prev) =>
