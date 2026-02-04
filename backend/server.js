@@ -1,38 +1,40 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const cors = require('cors');
+
 const connectDB = require('./config/db');
 const adminRoutes = require('./routes/adminRoutes');
 const menuRoutes = require('./routes/menuRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
-const cors = require('cors');
 
 dotenv.config();
 connectDB();
 
 const app = express();
 
-// CORS configuration
-const corsOptions = {
-  origin: true,
+// CORS (si querés dejarlo abierto, esto está ok)
+app.use(cors({
+  origin: true,          // refleja el Origin que llega
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-};
+}));
 
-app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+// Preflight
+app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => res.send('API is running...'));
 
+// Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/menu', menuRoutes);
-app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/upload', uploadRoutes);
 
-app.use('/api/upload', require('./routes/uploadRoutes'));
-
+// Error handling
 app.use(notFound);
 app.use(errorHandler);
 
