@@ -1,8 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const crypto = require('crypto');
-const sendEmail = require('../utils/sendEmail');
 const generateToken = require('../utils/generateToken');
 const Admin = require('../models/Admin');
+const send = require('../utils/send');
 
 
 
@@ -59,7 +59,7 @@ Si no fuiste vos, ignorá este correo.`;
   `;
 
   try {
-    await sendEmail({
+    await send({
       to: admin.email,
       subject,
       text,
