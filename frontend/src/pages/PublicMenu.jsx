@@ -71,7 +71,8 @@ const PublicMenu = () => {
   const restaurantName = data?.restaurantName || 'Menú';
   const menuItems = Array.isArray(data?.menuItems) ? data.menuItems : [];
 
-  const categories = ['All', ...new Set(menuItems.map((item) => item.category).filter(Boolean))];
+ const uniqueCategories = [...new Set(menuItems.map((item) => item.category).filter(Boolean))];
+const categories = [...uniqueCategories, 'All'];
 
   const filteredItems =
     activeCategory === 'All'

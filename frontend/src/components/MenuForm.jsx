@@ -33,7 +33,7 @@ const MenuForm = ({ onSubmit, initialData = {}, onCancel }) => {
   }, [initialData]);
 
   const categories = [
-    'Desayonos y Meriendas',
+    'Desayunos y Meriendas',
     'Entradas',
     'Principales',
     'Especiales',
