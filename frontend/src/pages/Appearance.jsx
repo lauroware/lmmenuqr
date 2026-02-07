@@ -346,6 +346,7 @@ const Appearance = () => {
                 <option value="grid">Tarjetas (grid)</option>
                 <option value="list">Lista horizontal</option>
                 <option value="accordion">Acordeón por categoría</option>
+                <option value="classic">Carta elegante</option>
               </select>
 
               <p className="text-xs text-gray-500 mt-2">Esto cambia la estructura (no los colores).</p>
