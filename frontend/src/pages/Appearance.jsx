@@ -349,7 +349,7 @@ const Appearance = () => {
                 <option value="classic">Carta elegante</option>
               </select>
 
-              <p className="text-xs text-gray-500 mt-2">Esto cambia la estructura (no los colores).</p>
+              <p className="text-xs text-gray-500 mt-2">Tener presente que si elegís fondo negro y color principal negro, pueden no verse algunos elementos.</p>
             </div>
 
             {/* Background */}
