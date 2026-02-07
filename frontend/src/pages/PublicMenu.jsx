@@ -8,6 +8,7 @@ import PublicMenuAccordion from './templates/PublicMenuAccordion';
 import PublicMenuUltraElegant from './templates/PublicMenuClassic';
 import PublicMenuClassic from './templates/PublicMenuMinimalista';
 import PublicMenuCafeTypewriter from './templates/PublicMenuCafe';
+import PublicMenuCafeRelax from './templates/PublicMenuRelax';
 
 
 const PublicMenu = () => {
@@ -45,6 +46,7 @@ const PublicMenu = () => {
   if (layout === 'classic') return <PublicMenuClassic data={data} />;
   if (layout === 'ultra-elegant') return <PublicMenuUltraElegant data={data} />;
   if (layout === 'cafe-typewriter') return <PublicMenuCafeTypewriter data={data} />;
+  if (layout === 'cafe-relax') return <PublicMenuCafeRelax data={data} />;
   return <PublicMenuGrid data={data} />;
 };
 

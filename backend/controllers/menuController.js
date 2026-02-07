@@ -329,9 +329,9 @@ const updateMenuTheme = asyncHandler(async (req, res) => {
   if (typeof coverUrl === 'string') next.coverUrl = coverUrl.trim();
 if (typeof layout === 'string') {
   const l = layout.trim().toLowerCase();
-  if (!['grid', 'list', 'accordion', 'classic', 'ultra-elegant', 'cafe-typewriter'].includes(l)) {
+  if (!['grid', 'list', 'accordion', 'classic', 'ultra-elegant', 'cafe-typewriter', 'cafe-relax'].includes(l)) {
     res.status(400);
-    throw new Error(`layout inválido: "${layout}". Usá "grid", "list",'ultra-elegant', 'cafe-typewriter' o "accordion"`);
+    throw new Error(`layout inválido: "${layout}". Usá "grid", "list",'ultra-elegant', 'cafe-typewriter' o "accordion", "cafe-relax"`);
   }
   next.layout = l;
 }
