@@ -15,7 +15,7 @@ const Appearance = () => {
     backgroundValue: '#ffffff', // color o URL si es image
     logoUrl: '',
     coverUrl: '',
-    layout: 'grid', // 👈 NUEVO
+    layout: 'grid', // ✅ template
   });
 
   // previews locales (antes de guardar)
@@ -43,7 +43,13 @@ const Appearance = () => {
       try {
         const menu = await getAdminMenu();
         const t = menu?.theme || {};
-        setTheme((prev) => ({ ...prev, ...t }));
+
+        // robusto: si el backend no trae layout, mantenemos el default
+        setTheme((prev) => ({
+          ...prev,
+          ...t,
+          layout: t.layout || prev.layout,
+        }));
 
         // previews iniciales = urls actuales
         setPreviews({
@@ -71,7 +77,6 @@ const Appearance = () => {
           backgroundPosition: 'center',
         };
       }
-      // fallback si eligió "imagen" pero no puso nada todavía
       return { backgroundColor: '#f3f4f6' };
     }
     return { backgroundColor: theme.backgroundValue || '#ffffff' };
@@ -126,8 +131,6 @@ const Appearance = () => {
     setFiles((prev) => ({ ...prev, [field]: null }));
     setPreviews((prev) => ({ ...prev, [field]: '' }));
 
-    // no borro del theme directo si era una URL ya guardada, eso lo haces con "Quitar"
-    // si querés borrarlo de verdad, lo manejamos acá:
     setTheme((prev) => {
       const next = { ...prev };
       if (field === 'backgroundValue') {
@@ -150,7 +153,6 @@ const Appearance = () => {
     try {
       setSaving(true);
 
-      // 1) subo imágenes seleccionadas (si hay)
       const nextTheme = { ...theme };
 
       const uploadOne = async (field) => {
@@ -159,7 +161,6 @@ const Appearance = () => {
 
         const uploaded = await uploadImage(file);
 
-        // robust: por si el backend devuelve distinto
         const url =
           uploaded?.url ||
           uploaded?.secure_url ||
@@ -183,14 +184,11 @@ const Appearance = () => {
         uploadOne('backgroundValue'),
       ]);
 
-      // 2) guardo theme final en backend
       await updateMenuTheme(nextTheme);
 
-      // 3) sincronizo estado y limpio files pendientes
       setTheme(nextTheme);
       setFiles({ logoUrl: null, coverUrl: null, backgroundValue: null });
 
-      // 4) previews ahora son URLs guardadas (para no dejar base64 gigante en memoria)
       setPreviews({
         logoUrl: nextTheme.logoUrl || '',
         coverUrl: nextTheme.coverUrl || '',
@@ -222,8 +220,7 @@ const Appearance = () => {
   const bgShown =
     theme.backgroundType === 'image' ? (previews.backgroundValue || theme.backgroundValue) : '';
 
-  const HasUnsaved =
-    !!files.logoUrl || !!files.coverUrl || !!files.backgroundValue;
+  const HasUnsaved = !!files.logoUrl || !!files.coverUrl || !!files.backgroundValue;
 
   return (
     <AdminLayout>
@@ -233,7 +230,7 @@ const Appearance = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Apariencia</h1>
             <p className="mt-2 text-gray-600">
-              Personalizá tu menú: colores, fondo, logo y portada.
+              Personalizá tu menú: colores, fondo, logo, portada y estructura.
             </p>
             {HasUnsaved && (
               <p className="mt-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 inline-flex px-3 py-1 rounded-full">
@@ -319,7 +316,7 @@ const Appearance = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900">Estilo base</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Estilo</h3>
 
             {/* Primary color */}
             <div>
@@ -350,97 +347,98 @@ const Appearance = () => {
               </div>
             </div>
 
+            {/* ✅ Template selector (SIEMPRE visible) */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <h3 className="font-bold text-gray-900 mb-3">Estructura del menú</h3>
+
+              <label className="block text-sm text-gray-700 mb-2">Template</label>
+
+              <select
+                value={theme.layout || 'grid'}
+                onChange={(e) => setTheme((prev) => ({ ...prev, layout: e.target.value }))}
+                className="w-full px-4 py-3 border rounded-lg border-gray-300 bg-white"
+              >
+                <option value="grid">Tarjetas (grid)</option>
+                <option value="list">Lista horizontal</option>
+                <option value="accordion">Acordeón por categoría</option>
+              </select>
+
+              <p className="text-xs text-gray-500 mt-2">
+                Esto cambia la estructura (no los colores).
+              </p>
+            </div>
+
             {/* Background */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Fondo</label>
 
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-  <div className="min-w-0">
-    <select
-      value={theme.backgroundType}
-      onChange={(e) => {
-        const v = e.target.value;
-        setTheme((prev) => ({
-          ...prev,
-          backgroundType: v,
-          backgroundValue: v === 'color' ? (prev.backgroundValue || '#ffffff') : (prev.backgroundValue || ''),
-        }));
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="min-w-0">
+                  <select
+                    value={theme.backgroundType}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setTheme((prev) => ({
+                        ...prev,
+                        backgroundType: v,
+                        backgroundValue:
+                          v === 'color'
+                            ? (prev.backgroundValue || '#ffffff')
+                            : (prev.backgroundValue || ''),
+                      }));
 
-        if (v === 'color') {
-          setFiles((prev) => ({ ...prev, backgroundValue: null }));
-          setPreviews((prev) => ({ ...prev, backgroundValue: '' }));
-          if (bgInputRef.current) bgInputRef.current.value = '';
-        }
-      }}
-      className="w-full px-4 py-3 border rounded-lg border-gray-300 bg-white"
-    >
-      <option value="color">Color</option>
-      <option value="image">Imagen</option>
-    </select>
-  </div>
+                      if (v === 'color') {
+                        setFiles((prev) => ({ ...prev, backgroundValue: null }));
+                        setPreviews((prev) => ({ ...prev, backgroundValue: '' }));
+                        if (bgInputRef.current) bgInputRef.current.value = '';
+                      }
+                    }}
+                    className="w-full px-4 py-3 border rounded-lg border-gray-300 bg-white"
+                  >
+                    <option value="color">Color</option>
+                    <option value="image">Imagen</option>
+                  </select>
+                </div>
 
-  <div className="min-w-0">
-    {theme.backgroundType === 'color' ? (
-      <div className="flex items-center gap-3 min-w-0">
-        <input
-          type="color"
-          value={theme.backgroundValue || '#ffffff'}
-          onChange={(e) =>
-            setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-          }
-          className="h-10 w-12 shrink-0 rounded border border-gray-300"
-        />
-        <input
-          type="text"
-          value={theme.backgroundValue}
-          onChange={(e) =>
-            setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-          }
-          className="min-w-0 flex-1 px-4 py-3 border rounded-lg border-gray-300"
-          placeholder="#ffffff"
-        />
-      </div>
-    ) : (
-      <div className="min-w-0">
-        <input
-          type="text"
-          value={theme.backgroundValue}
-          onChange={(e) =>
-            setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-          }
-          className="w-full min-w-0 px-4 py-3 border rounded-lg border-gray-300"
-          placeholder="URL (opcional) o subí una imagen abajo"
-        />
-        {errors.backgroundValue && (
-          <p className="text-sm text-red-600 mt-2">{errors.backgroundValue}</p>
-        )}
-      </div>
-    )}
-  </div>
-</div>
-
-<div className="bg-white rounded-2xl border p-5">
-  <h3 className="font-bold text-gray-900 mb-3">Estructura del menú</h3>
-
-  <label className="block text-sm text-gray-700 mb-2">
-    Template
-  </label>
-
-  <select
-    value={theme.layout || 'grid'}
-    onChange={(e) => setTheme((prev) => ({ ...prev, layout: e.target.value }))}
-    className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
-  >
-    <option value="grid">Tarjetas (grid)</option>
-    <option value="list">Lista horizontal</option>
-    <option value="accordion">Acordeón por categoría</option>
-  </select>
-
-  <p className="text-xs text-gray-500 mt-2">
-    Esto cambia la estructura (no los colores).
-  </p>
-</div>
-
+                <div className="min-w-0">
+                  {theme.backgroundType === 'color' ? (
+                    <div className="flex items-center gap-3 min-w-0">
+                      <input
+                        type="color"
+                        value={theme.backgroundValue || '#ffffff'}
+                        onChange={(e) =>
+                          setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
+                        }
+                        className="h-10 w-12 shrink-0 rounded border border-gray-300"
+                      />
+                      <input
+                        type="text"
+                        value={theme.backgroundValue}
+                        onChange={(e) =>
+                          setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
+                        }
+                        className="min-w-0 flex-1 px-4 py-3 border rounded-lg border-gray-300"
+                        placeholder="#ffffff"
+                      />
+                    </div>
+                  ) : (
+                    <div className="min-w-0">
+                      <input
+                        type="text"
+                        value={theme.backgroundValue}
+                        onChange={(e) =>
+                          setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
+                        }
+                        className="w-full min-w-0 px-4 py-3 border rounded-lg border-gray-300"
+                        placeholder="URL (opcional) o subí una imagen abajo"
+                      />
+                      {errors.backgroundValue && (
+                        <p className="text-sm text-red-600 mt-2">{errors.backgroundValue}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Background upload only if image */}
               {theme.backgroundType === 'image' && (
@@ -520,7 +518,7 @@ const Appearance = () => {
                     {errors.logoUrl && <p className="text-sm text-red-600 mt-2 text-center">{errors.logoUrl}</p>}
                   </div>
 
-                  {(logoShown) && (
+                  {logoShown && (
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-xs text-gray-600 truncate">
                         {files.logoUrl ? 'Nuevo logo listo para guardar ✅' : 'Logo actual'}
@@ -567,7 +565,7 @@ const Appearance = () => {
                   {errors.coverUrl && <p className="text-sm text-red-600 mt-2 text-center">{errors.coverUrl}</p>}
                 </div>
 
-                {(coverShown) && (
+                {coverShown && (
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs text-gray-600 truncate">
                       {files.coverUrl ? 'Nueva portada lista para guardar ✅' : 'Portada actual'}
