@@ -135,64 +135,95 @@ const categories = [...uniqueCategories, 'All'];
         </div>
 
         {/* Menu Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
-            <div
-              key={item._id}
-              className="bg-white/95 backdrop-blur rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col h-full border border-gray-100"
-            >
-              {item.image && (
-                <div className="h-48 w-full bg-gray-200 relative overflow-hidden">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                  {!item.available && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                      <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                        No está disponible
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="p-5 flex flex-col flex-grow">
-                <div className="flex justify-between items-start mb-2 gap-2">
-                  <h3 className="text-lg font-bold text-gray-900 line-clamp-2">{item.name}</h3>
-
-                  <span className="font-bold text-lg whitespace-nowrap" style={{ color: primaryColor }}>
-                    $
-                    {typeof item.price === 'number'
-                      ? item.price.toFixed(2)
-                      : item.price}
-                  </span>
-                </div>
-
-                <p className="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">{item.description}</p>
-
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 gap-2">
-                  <span
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
-                    style={{ backgroundColor: `${primaryColor}22`, color: primaryColor }}
-                  >
-                    {item.category}
-                  </span>
-
-                  {item.tags && item.tags.length > 0 && (
-                    <div className="flex space-x-1 flex-shrink-0">
-                      {item.tags.slice(0, 2).map((tag, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 whitespace-nowrap"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
+        {/* Menu List (image left, details center, price right) */}
+<div className="space-y-3">
+  {filteredItems.map((item) => (
+    <div
+      key={item._id}
+      className="bg-white/95 backdrop-blur rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
+    >
+      <div className="flex gap-4 p-4 sm:p-5">
+        {/* Image (left) */}
+        <div className="relative flex-shrink-0">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-gray-200">
+            {item.image ? (
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <i className="fas fa-image text-gray-400 text-xl"></i>
               </div>
+            )}
+          </div>
+
+          {!item.available && (
+            <div className="absolute inset-0 rounded-xl bg-black/55 flex items-center justify-center">
+              <span className="bg-red-500 text-white px-2.5 py-1 rounded-full text-xs font-bold">
+                No disponible
+              </span>
             </div>
-          ))}
+          )}
         </div>
+
+        {/* Details (center) */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+              {item.name}
+            </h3>
+
+            {/* Price (right) */}
+            <div className="flex-shrink-0 text-right">
+              <span className="font-extrabold text-base sm:text-lg whitespace-nowrap" style={{ color: primaryColor }}>
+                $
+                {typeof item.price === 'number'
+                  ? item.price.toFixed(2)
+                  : item.price}
+              </span>
+            </div>
+          </div>
+
+          {item.description && (
+            <p className="text-gray-500 text-sm mt-1 line-clamp-2">
+              {item.description}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            {/* Category pill */}
+            {item.category && (
+              <span
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
+                style={{ backgroundColor: `${primaryColor}22`, color: primaryColor }}
+              >
+                {item.category}
+              </span>
+            )}
+
+            {/* Tags */}
+            {item.tags && item.tags.length > 0 && (
+              <>
+                {item.tags.slice(0, 3).map((tag, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 whitespace-nowrap"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
 
         {filteredItems.length === 0 && (
           <div className="text-center py-12">
