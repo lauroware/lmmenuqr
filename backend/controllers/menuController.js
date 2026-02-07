@@ -329,7 +329,7 @@ const updateMenuTheme = asyncHandler(async (req, res) => {
   if (typeof coverUrl === 'string') next.coverUrl = coverUrl.trim();
 if (typeof layout === 'string') {
   const l = layout.trim().toLowerCase();
-  if (!['grid', 'list', 'accordion'].includes(l)) {
+  if (!['grid', 'list', 'accordion', 'classic'].includes(l)) {
     res.status(400);
     throw new Error(`layout inválido: "${layout}". Usá "grid", "list" o "accordion"`);
   }
