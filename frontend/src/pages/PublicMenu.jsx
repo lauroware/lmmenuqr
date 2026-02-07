@@ -53,13 +53,6 @@ const PublicMenu = () => {
     return [...new Set(menuItems.map((i) => i.category).filter(Boolean))];
   }, [menuItems]);
 
-  // Abrir la primera categoría automáticamente
-  useEffect(() => {
-    if (!openCategory && categories.length > 0) {
-      setOpenCategory(categories[0]);
-    }
-  }, [categories, openCategory]);
-
   // Agrupar items por categoría
   const itemsByCategory = useMemo(() => {
     const map = {};
