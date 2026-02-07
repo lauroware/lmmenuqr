@@ -178,11 +178,7 @@ const Appearance = () => {
         }
       };
 
-      await Promise.all([
-        uploadOne('logoUrl'),
-        uploadOne('coverUrl'),
-        uploadOne('backgroundValue'),
-      ]);
+      await Promise.all([uploadOne('logoUrl'), uploadOne('coverUrl'), uploadOne('backgroundValue')]);
 
       await updateMenuTheme(nextTheme);
 
@@ -217,8 +213,7 @@ const Appearance = () => {
 
   const logoShown = previews.logoUrl || theme.logoUrl;
   const coverShown = previews.coverUrl || theme.coverUrl;
-  const bgShown =
-    theme.backgroundType === 'image' ? (previews.backgroundValue || theme.backgroundValue) : '';
+  const bgShown = theme.backgroundType === 'image' ? (previews.backgroundValue || theme.backgroundValue) : '';
 
   const HasUnsaved = !!files.logoUrl || !!files.coverUrl || !!files.backgroundValue;
 
@@ -229,9 +224,7 @@ const Appearance = () => {
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Apariencia</h1>
-            <p className="mt-2 text-gray-600">
-              Personalizá tu menú: colores, fondo, logo, portada y estructura.
-            </p>
+            <p className="mt-2 text-gray-600">Personalizá tu menú: colores, fondo, logo, portada y estructura.</p>
             {HasUnsaved && (
               <p className="mt-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 inline-flex px-3 py-1 rounded-full">
                 Tenés cambios sin guardar
@@ -320,30 +313,22 @@ const Appearance = () => {
 
             {/* Primary color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Color principal
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Color principal</label>
               <div className="grid grid-cols-[auto,1fr] sm:grid-cols-[auto,160px,1fr] gap-3 items-center">
                 <input
                   type="color"
                   value={theme.primaryColor}
-                  onChange={(e) =>
-                    setTheme((prev) => ({ ...prev, primaryColor: e.target.value }))
-                  }
+                  onChange={(e) => setTheme((prev) => ({ ...prev, primaryColor: e.target.value }))}
                   className="h-10 w-12 rounded border border-gray-300"
                 />
                 <input
                   type="text"
                   value={theme.primaryColor}
-                  onChange={(e) =>
-                    setTheme((prev) => ({ ...prev, primaryColor: e.target.value }))
-                  }
+                  onChange={(e) => setTheme((prev) => ({ ...prev, primaryColor: e.target.value }))}
                   className="w-full px-4 py-3 border rounded-lg border-gray-300"
                   placeholder="#00a7c4"
                 />
-                <p className="text-xs text-gray-500 sm:text-right">
-                  Tip: usá un color bien contrastado.
-                </p>
+                <p className="text-xs text-gray-500 sm:text-right">Tip: usá un color bien contrastado.</p>
               </div>
             </div>
 
@@ -363,9 +348,7 @@ const Appearance = () => {
                 <option value="accordion">Acordeón por categoría</option>
               </select>
 
-              <p className="text-xs text-gray-500 mt-2">
-                Esto cambia la estructura (no los colores).
-              </p>
+              <p className="text-xs text-gray-500 mt-2">Esto cambia la estructura (no los colores).</p>
             </div>
 
             {/* Background */}
@@ -381,10 +364,7 @@ const Appearance = () => {
                       setTheme((prev) => ({
                         ...prev,
                         backgroundType: v,
-                        backgroundValue:
-                          v === 'color'
-                            ? (prev.backgroundValue || '#ffffff')
-                            : (prev.backgroundValue || ''),
+                        backgroundValue: v === 'color' ? (prev.backgroundValue || '#ffffff') : (prev.backgroundValue || ''),
                       }));
 
                       if (v === 'color') {
@@ -406,17 +386,13 @@ const Appearance = () => {
                       <input
                         type="color"
                         value={theme.backgroundValue || '#ffffff'}
-                        onChange={(e) =>
-                          setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-                        }
+                        onChange={(e) => setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))}
                         className="h-10 w-12 shrink-0 rounded border border-gray-300"
                       />
                       <input
                         type="text"
                         value={theme.backgroundValue}
-                        onChange={(e) =>
-                          setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-                        }
+                        onChange={(e) => setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))}
                         className="min-w-0 flex-1 px-4 py-3 border rounded-lg border-gray-300"
                         placeholder="#ffffff"
                       />
@@ -426,15 +402,11 @@ const Appearance = () => {
                       <input
                         type="text"
                         value={theme.backgroundValue}
-                        onChange={(e) =>
-                          setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))
-                        }
+                        onChange={(e) => setTheme((prev) => ({ ...prev, backgroundValue: e.target.value }))}
                         className="w-full min-w-0 px-4 py-3 border rounded-lg border-gray-300"
                         placeholder="URL (opcional) o subí una imagen abajo"
                       />
-                      {errors.backgroundValue && (
-                        <p className="text-sm text-red-600 mt-2">{errors.backgroundValue}</p>
-                      )}
+                      {errors.backgroundValue && <p className="text-sm text-red-600 mt-2">{errors.backgroundValue}</p>}
                     </div>
                   )}
                 </div>
@@ -449,9 +421,7 @@ const Appearance = () => {
                     </svg>
                     <div className="mt-3">
                       <label className="cursor-pointer">
-                        <span className="text-blue-600 hover:text-blue-500 font-medium">
-                          Subir imagen de fondo
-                        </span>
+                        <span className="text-blue-600 hover:text-blue-500 font-medium">Subir imagen de fondo</span>
                         <span className="text-gray-500"> (se guarda al apretar Guardar)</span>
                         <input
                           ref={bgInputRef}
