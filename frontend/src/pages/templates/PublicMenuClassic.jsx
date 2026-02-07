@@ -1,3 +1,5 @@
+
+
 import React, { useMemo } from 'react';
 
 const formatPrice = (price) => {
@@ -6,7 +8,7 @@ const formatPrice = (price) => {
   return String(price);
 };
 
-const PublicMenuClassic = ({ data }) => {
+const PublicMenuUltraElegant = ({ data }) => {
   const theme = data?.theme || {};
   const primaryColor = theme.primaryColor || '#d6b15e'; // dorado default
   const restaurantName = data?.restaurantName || 'Menú';
@@ -196,4 +198,4 @@ const PublicMenuClassic = ({ data }) => {
   );
 };
 
-export default PublicMenuClassic;
+export default PublicMenuUltraElegant;

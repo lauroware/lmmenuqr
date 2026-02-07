@@ -5,7 +5,8 @@ import { getPublicMenu } from '../api';
 import PublicMenuGrid from './templates/PublicMenuGrid';
 import PublicMenuList from './templates/PublicMenuList';
 import PublicMenuAccordion from './templates/PublicMenuAccordion';
-import PublicMenuClassic from './templates/PublicMenuClassic';
+import PublicMenuUltraElegant from './templates/PublicMenuClassic';
+import PublicMenuClassic from './templates/PublicMenuMinimalista';
 
 
 const PublicMenu = () => {
@@ -41,6 +42,7 @@ const PublicMenu = () => {
   if (layout === 'accordion') return <PublicMenuAccordion data={data} />;
   if (layout === 'list') return <PublicMenuList data={data} />;
   if (layout === 'classic') return <PublicMenuClassic data={data} />;
+  if (layout === 'ultra-elegant') return <PublicMenuUltraElegant data={data} />;
   return <PublicMenuGrid data={data} />;
 };
 

@@ -346,7 +346,8 @@ const Appearance = () => {
                 <option value="grid">Tarjetas (grid)</option>
                 <option value="list">Lista horizontal</option>
                 <option value="accordion">Acordeón por categoría</option>
-                <option value="classic">Carta elegante</option>
+                <option value="classic">Carta Minimalista</option>
+                <option value="ultra-elegant">Carta Elegante</option>
               </select>
 
               <p className="text-xs text-gray-500 mt-2">Tener presente que si elegís fondo negro y color principal negro, pueden no verse algunos elementos.</p>
