@@ -15,6 +15,7 @@ const Appearance = () => {
     backgroundValue: '#ffffff', // color o URL si es image
     logoUrl: '',
     coverUrl: '',
+    layout: 'grid', // 👈 NUEVO
   });
 
   // previews locales (antes de guardar)
@@ -416,6 +417,28 @@ const Appearance = () => {
       </div>
     )}
   </div>
+</div>
+
+<div className="bg-white rounded-2xl border p-5">
+  <h3 className="font-bold text-gray-900 mb-3">Estructura del menú</h3>
+
+  <label className="block text-sm text-gray-700 mb-2">
+    Template
+  </label>
+
+  <select
+    value={theme.layout || 'grid'}
+    onChange={(e) => setTheme((prev) => ({ ...prev, layout: e.target.value }))}
+    className="w-full rounded-xl border border-gray-200 px-3 py-2 bg-white"
+  >
+    <option value="grid">Tarjetas (grid)</option>
+    <option value="list">Lista horizontal</option>
+    <option value="accordion">Acordeón por categoría</option>
+  </select>
+
+  <p className="text-xs text-gray-500 mt-2">
+    Esto cambia la estructura (no los colores).
+  </p>
 </div>
 
 

@@ -307,6 +307,7 @@ const updateMenuTheme = asyncHandler(async (req, res) => {
     backgroundValue,
     logoUrl,
     coverUrl,
+    layout,
   } = req.body || {};
 
   const next = { ...(menu.theme || {}) };
@@ -326,6 +327,14 @@ const updateMenuTheme = asyncHandler(async (req, res) => {
   if (typeof backgroundValue === 'string') next.backgroundValue = backgroundValue.trim();
   if (typeof logoUrl === 'string') next.logoUrl = logoUrl.trim();
   if (typeof coverUrl === 'string') next.coverUrl = coverUrl.trim();
+if (typeof layout === 'string') {
+  const l = layout.trim().toLowerCase();
+  if (!['grid', 'list', 'accordion'].includes(l)) {
+    res.status(400);
+    throw new Error(`layout inválido: "${layout}". Usá "grid", "list" o "accordion"`);
+  }
+  next.layout = l;
+}
 
   menu.theme = next;
 
