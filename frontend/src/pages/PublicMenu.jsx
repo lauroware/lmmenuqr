@@ -7,6 +7,7 @@ import PublicMenuList from './templates/PublicMenuList';
 import PublicMenuAccordion from './templates/PublicMenuAccordion';
 import PublicMenuUltraElegant from './templates/PublicMenuClassic';
 import PublicMenuClassic from './templates/PublicMenuMinimalista';
+import PublicMenuCafeTypewriter from './templates/PublicMenuCafe';
 
 
 const PublicMenu = () => {
@@ -43,6 +44,7 @@ const PublicMenu = () => {
   if (layout === 'list') return <PublicMenuList data={data} />;
   if (layout === 'classic') return <PublicMenuClassic data={data} />;
   if (layout === 'ultra-elegant') return <PublicMenuUltraElegant data={data} />;
+  if (layout === 'cafe-typewriter') return <PublicMenuCafeTypewriter data={data} />;
   return <PublicMenuGrid data={data} />;
 };
 

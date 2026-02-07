@@ -24,7 +24,7 @@ const menuSchema = mongoose.Schema(
       backgroundValue: { type: String, default: '#f3f4f6' }, // color o URL si es image
       logoUrl: { type: String, default: '' },
       coverUrl: { type: String, default: '' },
-      layout: { type: String, enum: ['grid', 'list', 'accordion', 'classic'], default: 'grid' },
+      layout: { type: String, enum: ['grid', 'list', 'accordion', 'classic', 'ultra-elegant', 'cafe-typewriter', ], default: 'grid' },
     },
   },
   { timestamps: true }
