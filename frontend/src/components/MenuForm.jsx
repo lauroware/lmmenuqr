@@ -47,7 +47,9 @@ const MenuForm = ({ onSubmit, initialData = {}, onCancel }) => {
     'Sopas',
     'Postres',
     'Bebidas',
+    'Bebidas sin alcohol',
     'Vinos y Licores',
+    
 
   ];
 
