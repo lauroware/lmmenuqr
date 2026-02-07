@@ -141,7 +141,7 @@ const categories = [...uniqueCategories, 'All'];
     <div
   key={item._id}
   className={`bg-white/95 backdrop-blur rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300 ${
-    !item.available ? 'opacity-80' : ''
+    !item.available ? 'opacity-95' : ''
   }`}
 >
       <div className="flex gap-4 p-4 sm:p-5">
