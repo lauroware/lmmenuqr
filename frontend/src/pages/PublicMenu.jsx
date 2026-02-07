@@ -27,11 +27,11 @@ const PublicMenu = () => {
         setLoading(false);
       }
     };
+
     fetchMenu();
   }, [uniqueId]);
 
-  const theme = data?.theme || {};
-  const layout = theme.layout || 'grid';
+  const layout = data?.theme?.layout || 'grid';
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
   if (error) return <div className="min-h-screen flex items-center justify-center">{error}</div>;
