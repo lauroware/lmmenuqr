@@ -9,7 +9,7 @@ import PublicMenuUltraElegant from './templates/PublicMenuClassic';
 import PublicMenuClassic from './templates/PublicMenuMinimalista';
 import PublicMenuCafeTypewriter from './templates/PublicMenuCafe';
 import PublicMenuCafeRelax from './templates/PublicMenuRelax';
-import PublicMenuVisual from './templates/PublicMenuGrid';
+import PublicMenuVisual from './templates/PublicMenuVisual';
 
 
 const PublicMenu = () => {
