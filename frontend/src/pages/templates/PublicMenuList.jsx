@@ -96,15 +96,22 @@ const PublicMenuList = ({ data }) => {
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex justify-between gap-2">
-                  <h3 className="font-bold text-gray-900 truncate">{item.name}</h3>
-                  <span className="font-bold" style={{ color: primaryColor }}>
-                    ${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}
-                  </span>
-                </div>
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+  <h3 className="font-bold text-gray-900 whitespace-normal break-words flex-1 min-w-0">
+    {item.name}
+  </h3>
+
+  <span className="font-bold whitespace-nowrap shrink-0" style={{ color: primaryColor }}>
+    ${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}
+  </span>
+</div>
+
 
                 {item.description && (
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{item.description}</p>
+                  <p className="text-sm text-gray-500 mt-1 whitespace-normal break-words">
+  {item.description}
+</p>
+
                 )}
               </div>
             </div>

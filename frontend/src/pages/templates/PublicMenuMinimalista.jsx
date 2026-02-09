@@ -102,33 +102,33 @@ const PublicMenuClassic = ({ data }) => {
                         {items.map((item) => (
                           <div key={item._id} className={`${!item.available ? 'opacity-45' : ''}`}>
                             {/* row: nombre .... precio */}
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="min-w-0">
-                                <h3 className="text-base sm:text-lg font-extrabold text-white tracking-wide truncate">
-                                  {item.name}
-                                </h3>
+                          <div className="flex items-start justify-between gap-4 flex-wrap">
+  <div className="min-w-0 flex-1">
+    <h3 className="text-base sm:text-lg font-extrabold text-white tracking-wide whitespace-normal break-words">
+      {item.name}
+    </h3>
 
-                                {/* tags opcionales */}
-                                {item.tags?.length > 0 && (
-                                  <div className="mt-1 flex flex-wrap gap-1.5">
-                                    {item.tags.slice(0, 3).map((t, idx) => (
-                                      <span
-                                        key={idx}
-                                        className="text-[11px] px-2 py-0.5 rounded-full border border-white/15 bg-white/5 text-white/80"
-                                      >
-                                        {t}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
+    {item.tags?.length > 0 && (
+      <div className="mt-1 flex flex-wrap gap-1.5">
+        {item.tags.slice(0, 3).map((t, idx) => (
+          <span
+            key={idx}
+            className="text-[11px] px-2 py-0.5 rounded-full border border-white/15 bg-white/5 text-white/80"
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
 
-                              <div className="flex-shrink-0 text-right">
-                                <span className="text-base sm:text-lg font-extrabold" style={{ color: primaryColor }}>
-                                  ${formatPrice(item.price)}
-                                </span>
-                              </div>
-                            </div>
+  <div className="flex-shrink-0 text-right">
+    <span className="text-base sm:text-lg font-extrabold whitespace-nowrap" style={{ color: primaryColor }}>
+      ${formatPrice(item.price)}
+    </span>
+  </div>
+</div>
+
 
                             {item.description && (
                               <p className="mt-1 text-sm text-white/70 leading-snug">

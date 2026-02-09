@@ -118,28 +118,48 @@ const PublicMenuUltraElegant = ({ data }) => {
                         className={`${!item.available ? 'opacity-50' : ''}`}
                       >
                         {/* fila nombre .... precio */}
-                        <div className="flex items-baseline gap-3">
-                          <div className="min-w-0">
-                            <h3
-                              className="text-[15px] sm:text-[17px] font-semibold text-white truncate"
-                              style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
-                            >
-                              {item.name}
-                            </h3>
-                          </div>
+                     {/* Mobile: nombre completo + precio, sin cortar */}
+<div className="sm:hidden">
+  <div className="flex items-start justify-between gap-3">
+    <h3
+      className="text-[15px] font-semibold text-white whitespace-normal break-words flex-1 min-w-0"
+      style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+    >
+      {item.name}
+    </h3>
 
-                          {/* dots */}
-                          <div className="flex-1 border-b border-dotted border-white/20 translate-y-[-2px]" />
+    <span
+      className="text-[15px] font-extrabold text-white whitespace-nowrap shrink-0"
+      style={{ textShadow: '0 1px 2px rgba(0,0,0,.6)' }}
+    >
+      {price ? `$${price}` : ''}
+    </span>
+  </div>
+</div>
 
-                          <div className="flex-shrink-0">
-                            <span
-                              className="text-[15px] sm:text-[17px] font-extrabold text-white"
-                              style={{ textShadow: '0 1px 2px rgba(0,0,0,.6)' }}
-                            >
-                              {price ? `$${price}` : ''}
-                            </span>
-                          </div>
-                        </div>
+{/* Desktop: mantiene el estilo con puntitos */}
+<div className="hidden sm:flex items-baseline gap-3">
+  <div className="min-w-0">
+    <h3
+      className="text-[17px] font-semibold text-white truncate"
+      style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+    >
+      {item.name}
+    </h3>
+  </div>
+
+  <div className="flex-1 border-b border-dotted border-white/20 translate-y-[-2px]" />
+
+  <div className="flex-shrink-0">
+    <span
+      className="text-[17px] font-extrabold text-white"
+      style={{ textShadow: '0 1px 2px rgba(0,0,0,.6)' }}
+    >
+      {price ? `$${price}` : ''}
+    </span>
+  </div>
+</div>
+
 
                         {/* descripción */}
                         {item.description && (

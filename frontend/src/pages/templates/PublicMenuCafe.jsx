@@ -123,25 +123,42 @@ const PublicMenuCafeTypewriter = ({ data }) => {
                       return (
                         <div key={item._id} className={!item.available ? "opacity-50" : ""}>
                           {/* fila nombre .... precio */}
-                          <div className="flex items-baseline gap-3 font-mono">
-                            <div className="min-w-0">
-                              <h3 className="text-white text-[14px] sm:text-[15px] font-bold truncate">
-                                {item.name}
-                              </h3>
-                            </div>
+                        {/* Mobile: full readable */}
+<div className="sm:hidden font-mono">
+  <div className="flex items-start justify-between gap-3">
+    <h3 className="text-white text-[14px] font-bold whitespace-normal break-words flex-1 min-w-0">
+      {item.name}
+    </h3>
 
-                            {/* dots */}
-                            <div className="flex-1 border-b border-dotted border-white/20 translate-y-[-2px]" />
+    <span
+      className="text-[14px] font-bold whitespace-nowrap shrink-0"
+      style={{ color: price ? primaryColor : "rgba(255,255,255,.6)" }}
+    >
+      {price ? `$${price}` : ""}
+    </span>
+  </div>
+</div>
 
-                            <div className="flex-shrink-0">
-                              <span
-                                className="text-white text-[14px] sm:text-[15px] font-bold"
-                                style={{ color: price ? primaryColor : "rgba(255,255,255,.6)" }}
-                              >
-                                {price ? `$${price}` : ""}
-                              </span>
-                            </div>
-                          </div>
+{/* Desktop: mantiene dots */}
+<div className="hidden sm:flex items-baseline gap-3 font-mono">
+  <div className="min-w-0">
+    <h3 className="text-white text-[15px] font-bold truncate">
+      {item.name}
+    </h3>
+  </div>
+
+  <div className="flex-1 border-b border-dotted border-white/20 translate-y-[-2px]" />
+
+  <div className="flex-shrink-0">
+    <span
+      className="text-white text-[15px] font-bold"
+      style={{ color: price ? primaryColor : "rgba(255,255,255,.6)" }}
+    >
+      {price ? `$${price}` : ""}
+    </span>
+  </div>
+</div>
+
 
                           {/* descripción */}
                           {item.description && (

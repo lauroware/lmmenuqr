@@ -138,14 +138,16 @@ const PublicMenuAccordion = ({ data }) => {
 
                           {/* TEXTO */}
                           <div className="min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
-                              {item.name}
-                            </p>
+                       <p className="font-medium text-gray-900 whitespace-normal break-words">
+  {item.name}
+</p>
+
 
                             {item.description && (
-                              <p className="text-sm text-gray-500 line-clamp-2">
-                                {item.description}
-                              </p>
+                              <p className="text-sm text-gray-500 whitespace-normal break-words">
+  {item.description}
+</p>
+
                             )}
 
                             {item.tags && item.tags.length > 0 && (

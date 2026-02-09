@@ -133,25 +133,24 @@ const PublicMenuCafeRelax = ({ data }) => {
                             {/* Nombre + desc */}
                             <div className="min-w-0 flex-1">
                               {/* fila nombre .... precio */}
-                              <div className="flex items-start justify-between gap-3">
-                                <h3 className="font-extrabold text-gray-900 leading-snug truncate">
-                                  {item.name}
-                                </h3>
+                            <div className="flex items-start justify-between gap-3 flex-wrap">
+  <h3 className="font-extrabold text-gray-900 leading-snug flex-1 min-w-0 whitespace-normal break-words">
+    {item.name}
+  </h3>
 
-                                {/* PRECIO (acá está, bien visible) */}
-                                <span
-                                  className="font-extrabold whitespace-nowrap"
-                                  style={{ color: primaryColor }}
-                                >
-                                  ${money(item.price)}
-                                </span>
-                              </div>
+  <span
+    className="font-extrabold whitespace-nowrap shrink-0"
+    style={{ color: primaryColor }}
+  >
+    ${money(item.price)}
+  </span>
+</div>
 
-                              {item.description && (
-                                <p className="mt-1 text-sm text-gray-600 leading-snug line-clamp-2">
-                                  {item.description}
-                                </p>
-                              )}
+{item.description && (
+  <p className="mt-1 text-sm text-gray-600 leading-snug whitespace-normal break-words">
+    {item.description}
+  </p>
+)}
 
                               {/* tags suaves */}
                               {item.tags?.length > 0 && (
