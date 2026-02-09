@@ -164,6 +164,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     `*Dirección:* ${addr}\n` +
     `*Forma de pago:* ${pay}\n` +
     `*Anotaciones:* ${anot}\n\n` +
+    ` Leé atentamente y verificá que no hay errores` +
     `_Enviado desde el menú digital_`
   );
 };
