@@ -1,5 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { createDeliveryOrder } from '../../api'; // templates -> ../../api
+
+const money = (n) => {
+  const num = typeof n === "number" ? n : Number(n);
+  if (!Number.isFinite(num)) return "0.00";
+  return num.toFixed(2);
+};
 
 const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const isDelivery = mode === "delivery";
@@ -9,15 +14,13 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
 
   const [openCategory, setOpenCategory] = useState(null);
 
-  // Delivery: carrito + dirección
+  // Delivery: carrito + dirección + pago
   const [cart, setCart] = useState([]);
   const [address, setAddress] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  // UI: carrito colapsable
+  const [paymentMethod, setPaymentMethod] = useState(""); // 🆕 forma de pago
   const [cartOpen, setCartOpen] = useState(false);
 
-  // Padding dinámico para que el botón flotante nunca tape el contenido
+  // Padding dinámico para que el FAB no tape el contenido
   const fabRef = useRef(null);
   const [bottomPad, setBottomPad] = useState(0);
 
@@ -75,7 +78,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       ];
     });
 
-    // En celular, abrir el carrito si estaba vacío (sensación “funciona”)
+    // UX: si estaba vacío, abrimos el carrito en móvil
     if (!cartOpen && cart.length === 0) setCartOpen(true);
   };
 
@@ -93,6 +96,10 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     );
   };
 
+  const clearCart = () => {
+    setCart([]);
+  };
+
   const itemsCount = useMemo(() => cart.reduce((s, x) => s + (x.qty || 0), 0), [cart]);
 
   const total = useMemo(() => {
@@ -103,14 +110,13 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   }, [cart]);
 
   // ---------------------------
-  // ✅ Padding inferior dinámico para que el FAB no tape el contenido
+  // ✅ Padding inferior dinámico para FAB
   // ---------------------------
   useEffect(() => {
     if (!isDelivery) return;
 
     const update = () => {
       const h = fabRef.current?.offsetHeight || 0;
-      // Deja aire + safe area (iPhone)
       setBottomPad(h + 16);
     };
 
@@ -119,7 +125,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     return () => window.removeEventListener("resize", update);
   }, [isDelivery, itemsCount, total]);
 
-  // Bloquear scroll del fondo cuando el carrito (sheet) está abierto
+  // Bloquear scroll del fondo cuando el sheet está abierto
   useEffect(() => {
     if (!isDelivery) return;
     if (!cartOpen) return;
@@ -132,55 +138,41 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   }, [isDelivery, cartOpen]);
 
   // ---------------------------
-  // Confirmar: PDF + WhatsApp
+  // ✅ Armado del texto + WhatsApp
   // ---------------------------
-  const confirmOrder = async () => {
-    if (submitting) return;
+  const buildWhatsAppText = () => {
+    // Detalle por línea con subtotal
+    const lines = cart.map((x) => {
+      const p = typeof x.price === "number" ? x.price : Number(x.price);
+      const price = Number.isFinite(p) ? p : 0;
+      const sub = price * (x.qty || 0);
+      return `• ${x.qty} x ${x.name} — $${money(price)} (sub: $${money(sub)})`;
+    });
+
+    const addr = address.trim();
+    const pay = paymentMethod.trim();
+
+    const header = `*Pedido DELIVERY*\n*${restaurantName}*\n`;
+    const itemsBlock = `\n*Detalle:*\n${lines.join("\n")}\n`;
+    const totalBlock = `\n*TOTAL:* $${money(total)}\n`;
+    const addressBlock = `\n*Dirección:* ${addr}\n`;
+    const paymentBlock = pay ? `\n*Forma de pago:* ${pay}\n` : `\n*Forma de pago:* (no especificada)\n`;
+    const footer = `\n_Enviado desde el menú delivery_`;
+
+    return header + itemsBlock + totalBlock + addressBlock + paymentBlock + footer;
+  };
+
+  const sendToWhatsApp = () => {
     if (!cart.length) return;
     if (!address.trim()) return;
 
-    try {
-      setSubmitting(true);
+    const comercioWhatsApp = "5491162366175"; // ✅ tu número (formato internacional)
 
-      const comercioWhatsApp = "5491162366175"; // ✅ tu número
-
-      const payload = {
-        uniqueId: data?.uniqueId,
-        restaurantName: restaurantName,
-        address: address.trim(),
-        items: cart.map(x => ({
-          _id: x._id,
-          name: x.name,
-          price: x.price,
-          qty: x.qty
-        })),
-        total: Number(total.toFixed(2)),
-      };
-
-      const result = await createDeliveryOrder(payload); // { orderId, pdfUrl }
-
-      const pdfLink = `${window.location.origin}${result.pdfUrl}`;
-      const msg =
-        `Pedido DELIVERY #${result.orderId}\n` +
-        `Dirección: ${address.trim()}\n` +
-        `Total: $${Number(total).toFixed(2)}\n` +
-        `PDF: ${pdfLink}`;
-
-      window.open(
-        `https://wa.me/${comercioWhatsApp}?text=${encodeURIComponent(msg)}`,
-        "_blank"
-      );
-
-      // opcional: limpiar y cerrar
-      // setCart([]);
-      // setAddress("");
-      // setCartOpen(false);
-    } catch (e) {
-      console.error(e);
-      alert("No se pudo confirmar el pedido. Intentá de nuevo.");
-    } finally {
-      setSubmitting(false);
-    }
+    const text = buildWhatsAppText();
+    window.open(
+      `https://wa.me/${comercioWhatsApp}?text=${encodeURIComponent(text)}`,
+      "_blank"
+    );
   };
 
   return (
@@ -241,9 +233,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                   </div>
 
                   <i
-                    className={`fas fa-chevron-down transition-transform ${
-                      isOpen ? 'rotate-180' : ''
-                    }`}
+                    className={`fas fa-chevron-down transition-transform ${isOpen ? 'rotate-180' : ''}`}
                     style={{ color: primaryColor }}
                   />
                 </button>
@@ -254,9 +244,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                     {items.map(item => (
                       <div
                         key={item._id}
-                        className={`flex items-start justify-between gap-3 border-t pt-3 ${
-                          !item.available ? 'opacity-45' : ''
-                        }`}
+                        className={`flex items-start justify-between gap-3 border-t pt-3 ${!item.available ? 'opacity-45' : ''}`}
                       >
                         {/* IZQUIERDA */}
                         <div className="flex items-start gap-3 min-w-0">
@@ -315,14 +303,8 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
 
                         {/* DERECHA: PRECIO + AGREGAR (solo delivery) */}
                         <div className="flex flex-col items-end gap-2">
-                          <span
-                            className="font-bold whitespace-nowrap"
-                            style={{ color: primaryColor }}
-                          >
-                            $
-                            {typeof item.price === 'number'
-                              ? item.price.toFixed(2)
-                              : item.price}
+                          <span className="font-bold whitespace-nowrap" style={{ color: primaryColor }}>
+                            ${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}
                           </span>
 
                           {isDelivery && (
@@ -388,7 +370,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
               </div>
 
               <span className="font-bold whitespace-nowrap" style={{ color: primaryColor }}>
-                ${total.toFixed(2)}
+                ${money(total)}
               </span>
             </button>
           </div>
@@ -416,16 +398,26 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                   <div>
                     <h3 className="font-bold text-gray-900">Tu pedido</h3>
                     <p className="text-xs text-gray-500">
-                      Total: <span className="font-semibold" style={{ color: primaryColor }}>${total.toFixed(2)}</span>
+                      Total: <span className="font-semibold" style={{ color: primaryColor }}>${money(total)}</span>
                     </p>
                   </div>
 
-                  <button
-                    className="px-3 py-2 rounded-lg border text-sm font-semibold"
-                    onClick={() => setCartOpen(false)}
-                  >
-                    Cerrar
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {cart.length > 0 && (
+                      <button
+                        className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                        onClick={clearCart}
+                      >
+                        Vaciar
+                      </button>
+                    )}
+                    <button
+                      className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                      onClick={() => setCartOpen(false)}
+                    >
+                      Cerrar
+                    </button>
+                  </div>
                 </div>
 
                 {/* Body sheet */}
@@ -441,7 +433,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">{x.name}</p>
                             <p className="text-xs text-gray-500">
-                              ${typeof x.price === "number" ? x.price.toFixed(2) : Number(x.price).toFixed(2)} c/u
+                              ${money(x.price)} c/u
                             </p>
                           </div>
 
@@ -463,17 +455,24 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                       placeholder="Dirección de entrega"
                     />
 
+                    <input
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                      placeholder="Forma de pago (efectivo, MP, tarjeta...)"
+                    />
+
                     <button
                       className="w-full px-4 py-2 rounded-lg font-semibold text-sm text-white disabled:opacity-50"
                       style={{ backgroundColor: primaryColor }}
-                      disabled={submitting || cart.length === 0 || !address.trim()}
-                      onClick={confirmOrder}
+                      disabled={cart.length === 0 || !address.trim()}
+                      onClick={sendToWhatsApp}
                     >
-                      {submitting ? "Enviando..." : "Confirmar y enviar por WhatsApp"}
+                      Enviar pedido por WhatsApp
                     </button>
 
                     <p className="text-[11px] text-gray-500">
-                      * Se genera un PDF y se envía el link por WhatsApp al comercio.
+                      * Se enviará un mensaje con el detalle del pedido.
                     </p>
                   </div>
                 </div>
