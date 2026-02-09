@@ -456,7 +456,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   value={orderName}
   onChange={(e) => setOrderName(e.target.value)}
   className="w-full border rounded-lg px-3 py-2 text-sm"
-  placeholder="Nombre del pedido (ej: Juan, Mesa 4, Oficina)"
+  placeholder="Tu nombre"
 />
 
                     <input
