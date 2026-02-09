@@ -17,7 +17,8 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   // Delivery: carrito + dirección + pago
   const [cart, setCart] = useState([]);
   const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState(""); // 🆕 forma de pago
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [anotacion, setAnotacion] = useState("");// 🆕 forma de pago
   const [orderName, setOrderName] = useState(""); // 🆕 nombre del pedido
   const [cartOpen, setCartOpen] = useState(false);
 
@@ -152,6 +153,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const name = orderName.trim() || "Cliente sin nombre";
   const addr = address.trim();
   const pay = paymentMethod.trim() || "No especificada";
+  const anot = anotacion.trim() || "Sin anotaciones";
 
   return (
     `*Pedido DELIVERY*\n` +
@@ -160,7 +162,8 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     `*Detalle:*\n${lines.join("\n")}\n\n` +
     `*TOTAL:* $${money(total)}\n` +
     `*Dirección:* ${addr}\n` +
-    `*Forma de pago:* ${pay}\n\n` +
+    `*Forma de pago:* ${pay}\n` +
+    `*Anotaciones:* ${anot}\n\n` +
     `_Enviado desde el menú digital_`
   );
 };
@@ -470,8 +473,17 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="w-full border rounded-lg px-3 py-2 text-sm"
-                      placeholder="Forma de pago (efectivo, MP, tarjeta...)"
+                      placeholder="Forma de pago"
                     />
+
+                    <input
+                      value={anotacion}
+                      onChange={(e) => setAnotacion(e.target.value)}
+                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                      placeholder="Aclaraciones de tu pedido"
+                    />
+
+                
 
                     <button
                       className="w-full px-4 py-2 rounded-lg font-semibold text-sm text-white disabled:opacity-50"
