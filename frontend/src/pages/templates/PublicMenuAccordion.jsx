@@ -102,7 +102,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       setSubmitting(true);
 
       // 📌 PONÉ ACÁ EL WHATSAPP DEL COMERCIO (formato internacional)
-      const comercioWhatsApp = "5491162336175"; // <-- CAMBIAR
+      const comercioWhatsApp = "5491162366175"; // <-- CAMBIAR
 
       // Payload al backend
       const payload = {
