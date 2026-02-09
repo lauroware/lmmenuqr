@@ -212,8 +212,9 @@ const Profile = () => {
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h2 className="text-xl font-semibold text-gray-900">Acceso al menú digital</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Acceso al menú digital del salón y delivery </h2>
               </div>
+              
               <div className="px-6 py-4 space-y-6">
                 {/* Unique Menu URL */}
                 {profile.uniqueId ? (
@@ -284,6 +285,37 @@ const Profile = () => {
                   )}
                 </div>
                 )}
+
+                {/* URL Menú Delivery (sin QR, solo link) */}
+{profile.menuUrl && (
+  <div className="mt-4">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      URL del menú delivery (para enviar por WhatsApp)
+    </label>
+
+    <div className="flex items-center space-x-2">
+      <input
+        type="text"
+        value={`${profile.menuUrl}/delivery`}
+        readOnly
+        className="w-full px-4 py-3 border rounded-lg bg-gray-50 flex-1 border-gray-300"
+      />
+
+      <button
+        onClick={() => copyToClipboard(`${profile.menuUrl}/delivery`)}
+        className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg transition-all duration-200 border border-gray-300"
+        title="Copiar URL delivery"
+      >
+        📋
+      </button>
+    </div>
+
+    <p className="text-xs text-gray-500 mt-2">
+      Este link abre el menú con carrito para pedidos por WhatsApp.
+    </p>
+  </div>
+)}
+
 
                 {/* Regenerate Link */}
                 {profile.uniqueId && (
