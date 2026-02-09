@@ -1,10 +1,18 @@
 import React, { useMemo, useState } from 'react';
+import { createDeliveryOrder } from '../../api'; // ✅ IMPORTANTE: desde templates -> ../../api
 
-const PublicMenuAccordion = ({ data }) => {
+const PublicMenuAccordion = ({ data, mode = "salon" }) => {
+  const isDelivery = mode === "delivery";
+
   const theme = data?.theme || {};
   const primaryColor = theme.primaryColor || '#2563eb';
 
   const [openCategory, setOpenCategory] = useState(null);
+
+  // 🆕 Delivery: carrito + dirección
+  const [cart, setCart] = useState([]);
+  const [address, setAddress] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const bgStyle =
     theme.backgroundType === 'image' && theme.backgroundValue
@@ -36,6 +44,105 @@ const PublicMenuAccordion = ({ data }) => {
     return map;
   }, [menuItems]);
 
+  // ---------------------------
+  // 🆕 Funciones de carrito
+  // ---------------------------
+  const addToCart = (item) => {
+    if (!item?.available) return;
+
+    setCart(prev => {
+      const found = prev.find(x => x._id === item._id);
+      if (found) {
+        return prev.map(x =>
+          x._id === item._id ? { ...x, qty: (x.qty || 0) + 1 } : x
+        );
+      }
+      return [
+        ...prev,
+        {
+          _id: item._id,
+          name: item.name,
+          price: item.price,
+          qty: 1
+        }
+      ];
+    });
+  };
+
+  const decQty = (id) => {
+    setCart(prev =>
+      prev
+        .map(x => (x._id === id ? { ...x, qty: (x.qty || 0) - 1 } : x))
+        .filter(x => (x.qty || 0) > 0)
+    );
+  };
+
+  const incQty = (id) => {
+    setCart(prev =>
+      prev.map(x => (x._id === id ? { ...x, qty: (x.qty || 0) + 1 } : x))
+    );
+  };
+
+  const total = useMemo(() => {
+    return cart.reduce((sum, x) => {
+      const p = typeof x.price === "number" ? x.price : Number(x.price);
+      return sum + (Number.isFinite(p) ? p : 0) * (x.qty || 0);
+    }, 0);
+  }, [cart]);
+
+  // ---------------------------
+  // ✅ Confirmar: genera PDF en backend + abre WhatsApp
+  // ---------------------------
+  const confirmOrder = async () => {
+    if (submitting) return;
+    if (!cart.length) return;
+    if (!address.trim()) return;
+
+    try {
+      setSubmitting(true);
+
+      // 📌 PONÉ ACÁ EL WHATSAPP DEL COMERCIO (formato internacional)
+      const comercioWhatsApp = "54911XXXXXXXX"; // <-- CAMBIAR
+
+      // Payload al backend
+      const payload = {
+        uniqueId: data?.uniqueId, // el backend puede ignorarlo si no lo necesita
+        restaurantName: restaurantName,
+        address: address.trim(),
+        items: cart.map(x => ({
+          _id: x._id,
+          name: x.name,
+          price: x.price,
+          qty: x.qty
+        })),
+        total: Number(total.toFixed(2)),
+      };
+
+      const result = await createDeliveryOrder(payload); // { orderId, pdfUrl }
+
+      const pdfLink = `${window.location.origin}${result.pdfUrl}`;
+      const msg =
+        `Pedido DELIVERY #${result.orderId}\n` +
+        `Dirección: ${address.trim()}\n` +
+        `Total: $${Number(total).toFixed(2)}\n` +
+        `PDF: ${pdfLink}`;
+
+      window.open(
+        `https://wa.me/${comercioWhatsApp}?text=${encodeURIComponent(msg)}`,
+        "_blank"
+      );
+
+      // opcional: limpiar carrito
+      // setCart([]);
+      // setAddress("");
+    } catch (e) {
+      console.error(e);
+      alert("No se pudo confirmar el pedido. Intentá de nuevo.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen" style={bgStyle}>
       {/* HEADER */}
@@ -57,7 +164,7 @@ const PublicMenuAccordion = ({ data }) => {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      <main className={`max-w-5xl mx-auto px-4 py-8 space-y-6 ${isDelivery ? "pb-40" : ""}`}>
         {/* PORTADA */}
         {theme.coverUrl && (
           <img
@@ -138,16 +245,14 @@ const PublicMenuAccordion = ({ data }) => {
 
                           {/* TEXTO */}
                           <div className="min-w-0">
-                       <p className="font-medium text-gray-900 whitespace-normal break-words">
-  {item.name}
-</p>
-
+                            <p className="font-medium text-gray-900 whitespace-normal break-words">
+                              {item.name}
+                            </p>
 
                             {item.description && (
                               <p className="text-sm text-gray-500 whitespace-normal break-words">
-  {item.description}
-</p>
-
+                                {item.description}
+                              </p>
                             )}
 
                             {item.tags && item.tags.length > 0 && (
@@ -165,16 +270,33 @@ const PublicMenuAccordion = ({ data }) => {
                           </div>
                         </div>
 
-                        {/* PRECIO */}
-                        <span
-                          className="font-bold whitespace-nowrap"
-                          style={{ color: primaryColor }}
-                        >
-                          $
-                          {typeof item.price === 'number'
-                            ? item.price.toFixed(2)
-                            : item.price}
-                        </span>
+                        {/* DERECHA: PRECIO + AGREGAR (solo delivery) */}
+                        <div className="flex flex-col items-end gap-2">
+                          <span
+                            className="font-bold whitespace-nowrap"
+                            style={{ color: primaryColor }}
+                          >
+                            $
+                            {typeof item.price === 'number'
+                              ? item.price.toFixed(2)
+                              : item.price}
+                          </span>
+
+                          {isDelivery && (
+                            <button
+                              disabled={!item.available}
+                              onClick={() => addToCart(item)}
+                              className="px-3 py-1 rounded-lg text-xs font-semibold border"
+                              style={{
+                                borderColor: primaryColor,
+                                color: primaryColor,
+                                opacity: item.available ? 1 : 0.4
+                              }}
+                            >
+                              Agregar
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -190,6 +312,83 @@ const PublicMenuAccordion = ({ data }) => {
           </div>
         )}
       </main>
+
+      {/* 🆕 Barra/Panel fijo de carrito (solo delivery) */}
+      {isDelivery && (
+        <div className="fixed bottom-0 left-0 right-0 z-20">
+          <div className="max-w-5xl mx-auto px-4 pb-4">
+            <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-200 shadow-lg p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-gray-900">Tu pedido</h3>
+                <span className="font-bold" style={{ color: primaryColor }}>
+                  Total: ${total.toFixed(2)}
+                </span>
+              </div>
+
+              {cart.length === 0 ? (
+                <p className="text-sm text-gray-500 mt-2">
+                  Agregá productos para armar tu pedido.
+                </p>
+              ) : (
+                <div className="mt-3 space-y-2 max-h-40 overflow-auto pr-1">
+                  {cart.map(x => (
+                    <div key={x._id} className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {x.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          ${typeof x.price === "number" ? x.price.toFixed(2) : Number(x.price).toFixed(2)} c/u
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="px-2 py-1 border rounded"
+                          onClick={() => decQty(x._id)}
+                        >
+                          -
+                        </button>
+                        <span className="text-sm font-semibold w-6 text-center">
+                          {x.qty}
+                        </span>
+                        <button
+                          className="px-2 py-1 border rounded"
+                          onClick={() => incQty(x._id)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                <input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  placeholder="Dirección de entrega"
+                />
+
+                <button
+                  className="px-4 py-2 rounded-lg font-semibold text-sm text-white disabled:opacity-50"
+                  style={{ backgroundColor: primaryColor }}
+                  disabled={submitting || cart.length === 0 || !address.trim()}
+                  onClick={confirmOrder}
+                >
+                  {submitting ? "Enviando..." : "Confirmar"}
+                </button>
+              </div>
+
+              <p className="text-[11px] text-gray-500 mt-2">
+                * Se genera un PDF y se envía el link por WhatsApp al comercio.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

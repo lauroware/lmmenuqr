@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AdminDashboard from './pages/AdminDashboard';
 import PublicMenu from './pages/PublicMenu';
+import PublicMenuDelivery from './pages/PublicMenuDelivery'; // ✅ NUEVO
 import NotFound from './pages/NotFound';
 import Menu from './pages/Menu';
 import Profile from './pages/Profile';
@@ -13,7 +14,6 @@ import PrivateRoute from './components/PrivateRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
-
 function App() {
   return (
     <Router>
@@ -21,17 +21,20 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/menu/:uniqueId" element={<PublicMenu />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-<Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        
+        {/* ✅ Público */}
+        <Route path="/menu/:uniqueId" element={<PublicMenu />} />                 {/* SALÓN (igual) */}
+        <Route path="/menu/:uniqueId/delivery" element={<PublicMenuDelivery />} /> {/* DELIVERY (nuevo) */}
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* Protected Admin Routes */}
         <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
         <Route path="/admin/menu" element={<PrivateRoute><Menu /></PrivateRoute>} />
         <Route path="/admin/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-<Route path="/admin/appearance" element={<Appearance />} />
+        <Route path="/admin/appearance" element={<Appearance />} />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

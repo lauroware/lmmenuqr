@@ -137,3 +137,8 @@ export const reorderMenuItems = async (items) => {
   return response.data;
 };
 
+export const createDeliveryOrder = async ({ uniqueId, restaurantName, items, address, total }) => {
+  const response = await api.post('/orders', { uniqueId, restaurantName, items, address, total });
+  return response.data; // { orderId, pdfUrl }
+};
+

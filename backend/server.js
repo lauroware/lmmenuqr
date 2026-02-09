@@ -3,8 +3,10 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const adminRoutes = require('./routes/adminRoutes');
 const menuRoutes = require('./routes/menuRoutes');
+const orderRoutes = require('./routes/orderRoutes'); // ✅ NUEVO
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const cors = require('cors');
+const path = require('path');
 
 dotenv.config();
 connectDB();
@@ -29,9 +31,13 @@ app.get('/', (req, res) => res.send('API is running...'));
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/menu', menuRoutes);
-app.use('/api/admin', require('./routes/adminRoutes'));
-
 app.use('/api/upload', require('./routes/uploadRoutes'));
+
+// ✅ NUEVO: pedidos (crea PDF)
+app.use('/api/orders', orderRoutes);
+
+// ✅ NUEVO: servir PDFs por URL pública /orders/...
+app.use('/orders', express.static(path.join(__dirname, 'public', 'orders')));
 
 app.use(notFound);
 app.use(errorHandler);
