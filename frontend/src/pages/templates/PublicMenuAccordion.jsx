@@ -18,6 +18,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const [cart, setCart] = useState([]);
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState(""); // 🆕 forma de pago
+  const [orderName, setOrderName] = useState(""); // 🆕 nombre del pedido
   const [cartOpen, setCartOpen] = useState(false);
 
   // Padding dinámico para que el FAB no tape el contenido
@@ -140,27 +141,30 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   // ---------------------------
   // ✅ Armado del texto + WhatsApp
   // ---------------------------
-  const buildWhatsAppText = () => {
-    // Detalle por línea con subtotal
-    const lines = cart.map((x) => {
-      const p = typeof x.price === "number" ? x.price : Number(x.price);
-      const price = Number.isFinite(p) ? p : 0;
-      const sub = price * (x.qty || 0);
-      return `• ${x.qty} x ${x.name} — $${money(price)} (sub: $${money(sub)})`;
-    });
+ const buildWhatsAppText = () => {
+  const lines = cart.map((x) => {
+    const p = typeof x.price === "number" ? x.price : Number(x.price);
+    const price = Number.isFinite(p) ? p : 0;
+    const sub = price * (x.qty || 0);
+    return `• ${x.qty} x ${x.name} — $${money(price)} (sub: $${money(sub)})`;
+  });
 
-    const addr = address.trim();
-    const pay = paymentMethod.trim();
+  const name = orderName.trim() || "Cliente sin nombre";
+  const addr = address.trim();
+  const pay = paymentMethod.trim() || "No especificada";
 
-    const header = `*Pedido DELIVERY*\n*${restaurantName}*\n`;
-    const itemsBlock = `\n*Detalle:*\n${lines.join("\n")}\n`;
-    const totalBlock = `\n*TOTAL:* $${money(total)}\n`;
-    const addressBlock = `\n*Dirección:* ${addr}\n`;
-    const paymentBlock = pay ? `\n*Forma de pago:* ${pay}\n` : `\n*Forma de pago:* (no especificada)\n`;
-    const footer = `\n_Enviado desde el menú delivery_`;
+  return (
+    `*Pedido DELIVERY*\n` +
+    `*Nombre:* ${name}\n` +
+    `*Comercio:* ${restaurantName}\n\n` +
+    `*Detalle:*\n${lines.join("\n")}\n\n` +
+    `*TOTAL:* $${money(total)}\n` +
+    `*Dirección:* ${addr}\n` +
+    `*Forma de pago:* ${pay}\n\n` +
+    `_Enviado desde el menú digital_`
+  );
+};
 
-    return header + itemsBlock + totalBlock + addressBlock + paymentBlock + footer;
-  };
 
   const sendToWhatsApp = () => {
     if (!cart.length) return;
@@ -448,6 +452,13 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                   )}
 
                   <div className="mt-3 flex flex-col gap-2">
+                    <input
+  value={orderName}
+  onChange={(e) => setOrderName(e.target.value)}
+  className="w-full border rounded-lg px-3 py-2 text-sm"
+  placeholder="Nombre del pedido (ej: Juan, Mesa 4, Oficina)"
+/>
+
                     <input
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
