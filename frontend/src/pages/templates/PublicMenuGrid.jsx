@@ -1,21 +1,8 @@
 import React, { useMemo, useState } from 'react';
 
-const formatPrice = (price) => {
-  if (price === null || price === undefined || price === '') return '';
-  if (typeof price === 'number') return price.toFixed(2);
-  const n = Number(price);
-  return Number.isNaN(n) ? String(price) : n.toFixed(2);
-};
-
 const PublicMenuGrid = ({ data }) => {
   const theme = data?.theme || {};
   const primaryColor = theme.primaryColor || '#2563eb';
-
-  const restaurantName = data?.restaurantName || 'Menú';
-  const menuItems = Array.isArray(data?.menuItems) ? data.menuItems : [];
-
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [selectedItem, setSelectedItem] = useState(null);
 
   const bgStyle =
     theme.backgroundType === 'image' && theme.backgroundValue
@@ -25,272 +12,164 @@ const PublicMenuGrid = ({ data }) => {
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
         }
-      : { backgroundColor: theme.backgroundValue || '#0b0b0b' };
+      : {
+          backgroundColor: theme.backgroundValue || '#f3f4f6',
+        };
 
-  const categories = useMemo(() => {
-    const unique = [...new Set(menuItems.map((i) => i.category).filter(Boolean))];
-    return ['All', ...unique];
-  }, [menuItems]);
+  const restaurantName = data?.restaurantName || 'Menú';
+  const menuItems = Array.isArray(data?.menuItems) ? data.menuItems : [];
 
-  const filteredItems =
-    activeCategory === 'All'
-      ? menuItems
-      : menuItems.filter((i) => i.category === activeCategory);
+  // categorías SIN "All"
+  const categories = useMemo(
+    () => [...new Set(menuItems.map((item) => item.category).filter(Boolean))],
+    [menuItems]
+  );
 
-  const closeModal = () => setSelectedItem(null);
+  // por default: sin categoría seleccionada (muestra todo)
+  const [activeCategory, setActiveCategory] = useState('');
+
+  const filteredItems = useMemo(() => {
+    if (!activeCategory) return menuItems;
+    return menuItems.filter((item) => item.category === activeCategory);
+  }, [menuItems, activeCategory]);
 
   return (
     <div className="min-h-screen" style={bgStyle}>
-      {/* Overlay si hay imagen o fondo oscuro */}
-      <div className="min-h-screen bg-black/35">
-        {/* Header */}
-        <header className="bg-black/55 backdrop-blur sticky top-0 z-20 border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-center gap-3">
+      {/* Header */}
+      <header className="bg-white/90 backdrop-blur shadow-sm sticky top-0 z-10 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-center gap-3">
             {theme.logoUrl ? (
               <img src={theme.logoUrl} alt="Logo" className="h-10 w-auto object-contain" />
             ) : (
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: `${primaryColor}22` }}
               >
                 <i className="fas fa-utensils text-xl" style={{ color: primaryColor }} />
               </div>
             )}
-            <h1 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">
-              {restaurantName}
-            </h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">{restaurantName}</h1>
           </div>
+        </div>
+      </header>
 
-          {/* Categorías */}
-          <div className="max-w-7xl mx-auto px-4 pb-4">
-            <div className="flex overflow-x-auto gap-2">
-              {categories.map((cat) => {
-                const active = activeCategory === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-semibold border transition ${
-                      active
-                        ? 'text-white'
-                        : 'bg-white/10 text-white/80 border-white/10 hover:bg-white/15'
-                    }`}
-                    style={active ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {theme.coverUrl && (
+          <div className="mb-6">
+            <img
+              src={theme.coverUrl}
+              alt="Portada"
+              className="w-full h-44 sm:h-56 object-cover rounded-2xl shadow-sm border border-white/60"
+            />
           </div>
-        </header>
+        )}
 
-        <main className="max-w-7xl mx-auto px-4 py-6">
-          {/* Cover */}
-          {theme.coverUrl && (
-            <div className="mb-6">
-              <img
-                src={theme.coverUrl}
-                alt="Portada"
-                className="w-full h-44 sm:h-56 object-cover rounded-2xl border border-white/10 shadow-sm"
-              />
-            </div>
-          )}
-
-          {/* Grid súper visual */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredItems.map((item) => {
-              const price = formatPrice(item.price);
-              const hasImage = !!item.image;
+        {/* Category Filter (sin All) */}
+        {categories.length > 0 && (
+          <div className="flex overflow-x-auto pb-4 mb-6 scrollbar-hide space-x-2">
+            {categories.map((category) => {
+              const active = activeCategory === category;
 
               return (
                 <button
-                  key={item._id}
-                  onClick={() => setSelectedItem(item)}
-                  className={`text-left rounded-2xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur hover:bg-white/10 transition ${
-                    !item.available ? 'opacity-45' : ''
+                  key={category}
+                  onClick={() => setActiveCategory((prev) => (prev === category ? '' : category))}
+                  className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all duration-200 border ${
+                    active
+                      ? 'text-white shadow-md transform scale-105'
+                      : 'bg-white/90 text-gray-600 hover:bg-white border-gray-200'
                   }`}
+                  style={active ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
                 >
-                  {/* Imagen protagonista (si no hay, placeholder) */}
-                  <div className="relative w-full aspect-[4/3] bg-black/20">
-                    {hasImage ? (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center"
-                          style={{ backgroundColor: `${primaryColor}22` }}
-                        >
-                          <i className="fas fa-image text-xl" style={{ color: primaryColor }} />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Badge no disponible */}
-                    {!item.available && (
-                      <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
-                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                          No disponible
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Precio arriba a la derecha */}
-                    {price && (
-                      <div className="absolute top-2 right-2">
-                        <span
-                          className="px-2.5 py-1 rounded-full text-xs font-extrabold text-white shadow-sm"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          ${price}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Texto mínimo */}
-                  <div className="p-3">
-                    <h3 className="font-extrabold text-white leading-snug whitespace-normal break-words">
-                      {item.name}
-                    </h3>
-
-                    {item.description && (
-                      <p className="mt-1 text-xs text-white/70 leading-snug whitespace-normal break-words">
-                        {item.description}
-                      </p>
-                    )}
-
-                    <div className="mt-2 flex items-center justify-between gap-2">
-                      {item.category && (
-                        <span className="text-[10px] text-white/70 whitespace-nowrap">
-                          {item.category}
-                        </span>
-                      )}
-
-                      {item.tags?.length > 0 && (
-                        <span className="text-[10px] text-white/60 whitespace-nowrap">
-                          {item.tags[0]}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  {category}
                 </button>
               );
             })}
           </div>
+        )}
 
-          {filteredItems.length === 0 && (
-            <div className="text-center py-12 text-white/80">
-              No hay items en esta categoría.
-            </div>
-          )}
-        </main>
-
-        {/* Modal / Bottom sheet */}
-        {selectedItem && (
-          <div className="fixed inset-0 z-30">
-            {/* backdrop */}
+        {/* Menu Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredItems.map((item) => (
             <div
-              className="absolute inset-0 bg-black/70"
-              onClick={closeModal}
-              role="button"
-              tabIndex={0}
-            />
-
-            {/* sheet */}
-            <div className="absolute inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center">
-              <div className="w-full sm:w-[520px] bg-black/90 border border-white/10 backdrop-blur rounded-t-3xl sm:rounded-3xl overflow-hidden">
-                {/* imagen */}
-                <div className="relative w-full aspect-[4/3] bg-black/30">
-                  {selectedItem.image ? (
-                    <img
-                      src={selectedItem.image}
-                      alt={selectedItem.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                        style={{ backgroundColor: `${primaryColor}22` }}
-                      >
-                        <i className="fas fa-image text-2xl" style={{ color: primaryColor }} />
-                      </div>
+              key={item._id}
+              className={`bg-white/95 backdrop-blur rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300 ${
+                !item.available ? 'opacity-45' : ''
+              }`}
+            >
+              {item.image && (
+                <div className="h-48 w-full bg-gray-200 relative overflow-hidden">
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  {!item.available && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                      <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        No está disponible
+                      </span>
                     </div>
                   )}
+                </div>
+              )}
 
-                  <button
-                    onClick={closeModal}
-                    className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/60 border border-white/10 text-white flex items-center justify-center"
-                    aria-label="Cerrar"
-                  >
-                    <i className="fas fa-times" />
-                  </button>
+              <div className="p-5 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-2 gap-2">
+                  <h3 className="text-lg font-bold text-gray-900 line-clamp-2">{item.name}</h3>
+
+                  <span className="font-bold text-lg whitespace-nowrap" style={{ color: primaryColor }}>
+                    ${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}
+                  </span>
                 </div>
 
-                {/* contenido */}
-                <div className="p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <h2 className="text-lg font-extrabold text-white whitespace-normal break-words flex-1 min-w-0">
-                      {selectedItem.name}
-                    </h2>
+                {item.description && (
+                  <p className="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">{item.description}</p>
+                )}
 
-                    <span className="font-extrabold text-white whitespace-nowrap" style={{ color: primaryColor }}>
-                      ${formatPrice(selectedItem.price)}
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 gap-2">
+                  {item.category && (
+                    <span
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
+                      style={{ backgroundColor: `${primaryColor}22`, color: primaryColor }}
+                    >
+                      {item.category}
                     </span>
-                  </div>
-
-                  {selectedItem.description && (
-                    <p className="mt-2 text-sm text-white/75 whitespace-normal break-words">
-                      {selectedItem.description}
-                    </p>
                   )}
 
-                  {selectedItem.tags?.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {selectedItem.tags.map((t, idx) => (
+                  {item.tags && item.tags.length > 0 && (
+                    <div className="flex space-x-1 flex-shrink-0">
+                      {item.tags.slice(0, 2).map((tag, idx) => (
                         <span
                           key={idx}
-                          className="text-[11px] px-2 py-1 rounded-full border border-white/10 bg-white/5 text-white/80"
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 whitespace-nowrap"
                         >
-                          {t}
+                          {tag}
                         </span>
                       ))}
                     </div>
                   )}
-
-                  {!selectedItem.available && (
-                    <p className="mt-4 text-xs font-bold text-red-300">
-                      No disponible
-                    </p>
-                  )}
-
-                  <div className="mt-5">
-                    <button
-                      onClick={closeModal}
-                      className="w-full py-3 rounded-2xl font-bold text-white"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      Volver al menú
-                    </button>
-                  </div>
-
-                  <div className="mt-2 pb-[env(safe-area-inset-bottom)]" />
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+
+        {filteredItems.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-white/80 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-search text-gray-400 text-xl" />
+            </div>
+            <p className="text-gray-600 text-lg">No hay items en esta categoría.</p>
           </div>
         )}
+      </main>
 
-        <footer className="mt-10 pb-10 text-center text-white/45 text-xs">
-          Powered by <span className="font-semibold text-white/60">LatinNexo 2026</span>
-        </footer>
-      </div>
+      <footer className="bg-white/90 backdrop-blur border-t border-gray-200 mt-12 py-8">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-gray-400 text-sm flex items-center justify-center">
+            Powered by <i className="fas fa-cloud text-gray-300 mx-1" />{' '}
+            <span className="font-semibold text-gray-500">LatinNexo 2026</span>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

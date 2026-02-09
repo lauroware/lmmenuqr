@@ -350,6 +350,7 @@ const Appearance = () => {
                 <option value="ultra-elegant">Carta Elegante</option>
                 <option value="cafe-typewriter">Carta tipo café Literario</option>
                 <option value="cafe-relax">Lista con fotos y sin filtro</option>
+                <option value="visual">Visual (fotos grandes)</option>
               </select>
 
               <p className="text-xs text-gray-500 mt-2">Las opciones carta no muestras fotos. Cuidado con el contraste de colores, puede ser que un elemento no se vea.</p>
