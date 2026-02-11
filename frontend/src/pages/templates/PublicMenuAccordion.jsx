@@ -159,6 +159,15 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     .replace(/\s+/g, "");
   const igUrl = igUser ? `https://instagram.com/${igUser}` : null;
 
+  const waNumber = String(data?.whatsapp || "")
+  .trim()
+  .replace(/\D/g, ""); // solo números
+
+const waUrl = waNumber
+  ? `https://wa.me/${waNumber}`
+  : null;
+
+
   // ---------------------------
   // Armado del texto + WhatsApp
   // ---------------------------
@@ -277,6 +286,19 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
             </div>
           </div>
         )}
+
+        {waUrl && (
+  <a
+    href={waUrl}
+    target="_blank"
+    rel="noreferrer"
+    className="px-3 py-2 rounded-lg border text-sm font-semibold"
+    style={{ borderColor: primaryColor, color: primaryColor }}
+  >
+    💬 WhatsApp
+  </a>
+)}
+
 
         {/* ACCORDION */}
         <div className="space-y-3">
