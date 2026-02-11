@@ -190,7 +190,8 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     const isPickup = deliveryType === "pickup";
     if (!isPickup && !address.trim()) return; // ✅ solo exige dirección si es envío
 
-    const comercioWhatsApp = "5491162366175"; // tu número
+    const comercioWhatsApp = String(data?.whatsapp || data?.phone || "").replace(/\D/g, "");
+if (!comercioWhatsApp) return;
 
     const text = buildWhatsAppText();
     window.open(
@@ -198,6 +199,19 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       "_blank"
     );
   };
+
+  // ✅ Links del comercio (solo delivery)
+const adminAddress = (data?.address || "").trim();
+
+const mapsUrl = adminAddress
+  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adminAddress)}`
+  : null;
+
+const igUser = String(data?.instagram || "").trim().replace(/^@/, "");
+const igUrl = igUser
+  ? `https://instagram.com/${encodeURIComponent(igUser)}`
+  : null;
+
 
   const canSend =
     cart.length > 0 && (deliveryType === "pickup" || address.trim().length > 0);
@@ -227,14 +241,54 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
         className="max-w-5xl mx-auto px-4 py-8 space-y-6"
         style={{ paddingBottom: isDelivery ? `${bottomPad}px` : undefined }}
       >
-        {/* PORTADA */}
-        {theme.coverUrl && (
-          <img
-            src={theme.coverUrl}
-            alt="Portada"
-            className="w-full h-44 sm:h-56 object-cover rounded-2xl shadow-sm border border-white/60"
-          />
-        )}
+        {/* PORTADA (solo salón) */}
+{!isDelivery && theme.coverUrl && (
+  <img
+    src={theme.coverUrl}
+    alt="Portada"
+    className="w-full h-44 sm:h-56 object-cover rounded-2xl shadow-sm border border-white/60"
+  />
+)}
+
+
+{/* Links del comercio (solo delivery) */}
+{isDelivery && (mapsUrl || igUrl) && (
+  <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="flex flex-wrap gap-2">
+      {mapsUrl && (
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="px-3 py-2 rounded-lg border text-sm font-semibold"
+          style={{ borderColor: primaryColor, color: primaryColor }}
+        >
+          📍 Cómo llegar
+        </a>
+      )}
+
+      {igUrl && (
+        <a
+          href={igUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="px-3 py-2 rounded-lg border text-sm font-semibold"
+          style={{ borderColor: primaryColor, color: primaryColor }}
+        >
+          📷 Instagram @{igUser}
+        </a>
+      )}
+    </div>
+
+    {!mapsUrl && (
+      <p className="text-xs text-gray-500 mt-2">
+        El comercio todavía no cargó la dirección.
+      </p>
+    )}
+  </div>
+)}
+
+
 
         {/* ACCORDION */}
         <div className="space-y-3">

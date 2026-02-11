@@ -25,6 +25,20 @@ const adminSchema = mongoose.Schema(
       required: true,
     },
 
+    // 🆕 NUEVOS CAMPOS
+    whatsapp: {
+      type: String,
+      default: "",
+    },
+    address: {
+      type: String,
+      default: "",
+    },
+    instagram: {
+      type: String,
+      default: "",
+    },
+
     // ✅ Reset password
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
@@ -33,20 +47,3 @@ const adminSchema = mongoose.Schema(
     timestamps: true,
   }
 );
-
-adminSchema.pre('save', async function (next) {
-  // IMPORTANTE: si no se modifica la pass, no rehashees
-  if (!this.isModified('password')) return next();
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-adminSchema.methods.matchPassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
-};
-
-const Admin = mongoose.model('Admin', adminSchema);
-
-module.exports = Admin;
