@@ -229,7 +229,7 @@ const deleteMenuItem = asyncHandler(async (req, res) => {
 // @access  Public
 // GET /api/menu/:uniqueId
 const getPublicMenu = asyncHandler(async (req, res) => {
-  const menu = await Menu.findOne({ uniqueId: req.params.uniqueId })
+  const menu = await Menu.find({ uniqueId: req.params.uniqueId })
     .populate("admin", "whatsapp address instagram phone restaurantName") // 👈 trae esos campos del Admin
     .lean();
 
