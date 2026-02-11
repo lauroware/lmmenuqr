@@ -121,14 +121,17 @@ const authAdmin = asyncHandler(async (req, res) => {
   const admin = await Admin.findOne({ email });
 
   if (admin && (await admin.matchPassword(password))) {
-    res.json({
-      _id: admin._id,
-      name: admin.name,
-      email: admin.email,
-      restaurantName: admin.restaurantName,
-      phone: admin.phone,
-      token: generateToken(admin._id),
-    });
+   res.json({
+  _id: admin._id,
+  name: admin.name,
+  email: admin.email,
+  restaurantName: admin.restaurantName,
+  phone: admin.phone,
+  whatsapp: admin.whatsapp,
+  address: admin.address,
+  instagram: admin.instagram,
+  token: generateToken(admin._id),
+});
   } else {
     res.status(401);
     throw new Error('Invalid email or password');
@@ -139,10 +142,18 @@ const authAdmin = asyncHandler(async (req, res) => {
 // @route   POST /api/admin/register
 // @access  Public
 const registerAdmin = asyncHandler(async (req, res) => {
-  const { name, email, password, restaurantName, phone } = req.body;
+  const {
+    name,
+    email,
+    password,
+    restaurantName,
+    phone,
+    whatsapp,
+    address,
+    instagram,
+  } = req.body;
 
   const adminExists = await Admin.findOne({ email });
-
   if (adminExists) {
     res.status(400);
     throw new Error('Admin already exists');
@@ -154,6 +165,9 @@ const registerAdmin = asyncHandler(async (req, res) => {
     password,
     restaurantName,
     phone,
+    whatsapp: whatsapp || "",
+    address: address || "",
+    instagram: (instagram || "").replace(/^@/, ""),
   });
 
   if (admin) {
@@ -163,6 +177,9 @@ const registerAdmin = asyncHandler(async (req, res) => {
       email: admin.email,
       restaurantName: admin.restaurantName,
       phone: admin.phone,
+      whatsapp: admin.whatsapp,
+      address: admin.address,
+      instagram: admin.instagram,
       token: generateToken(admin._id),
     });
   } else {
@@ -170,6 +187,7 @@ const registerAdmin = asyncHandler(async (req, res) => {
     throw new Error('Invalid admin data');
   }
 });
+
 
 // @desc    Get admin profile
 // @route   GET /api/admin/profile
@@ -196,6 +214,10 @@ const updateAdminProfile = asyncHandler(async (req, res) => {
     admin.email = req.body.email || admin.email;
     admin.restaurantName = req.body.restaurantName || admin.restaurantName;
     admin.phone = req.body.phone || admin.phone;
+    admin.whatsapp = req.body.whatsapp ?? admin.whatsapp;
+admin.address = req.body.address ?? admin.address;
+admin.instagram = req.body.instagram ? req.body.instagram.replace(/^@/, "") : admin.instagram;
+
 
     if (req.body.password) {
       admin.password = req.body.password;
@@ -209,6 +231,10 @@ const updateAdminProfile = asyncHandler(async (req, res) => {
       email: updatedAdmin.email,
       restaurantName: updatedAdmin.restaurantName,
       phone: updatedAdmin.phone,
+      whatsapp: updatedAdmin.whatsapp,
+address: updatedAdmin.address,
+instagram: updatedAdmin.instagram,
+
       token: generateToken(updatedAdmin._id),
     });
   } else {

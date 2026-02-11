@@ -9,8 +9,12 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
     restaurantName: '',
-    phone: ''
+    phone: '',
+    whatsapp: '',   // 🆕
+    address: '',    // 🆕
+    instagram: ''   // 🆕
   });
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -19,9 +23,7 @@ const Signup = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
 
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
@@ -39,13 +41,12 @@ const Signup = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (!formData.restaurantName.trim()) {
-      newErrors.restaurantName = 'Restaurant name is required';
-    }
+    if (!formData.restaurantName.trim()) newErrors.restaurantName = 'Restaurant name is required';
+    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    }
+    // 🆕 opcional: si no cargan whatsapp, usamos phone
+    // (no lo marco como error)
+    // address e instagram también opcionales (podés marcarlos obligatorios si querés)
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -53,41 +54,35 @@ const Signup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear error when user starts typing
+    setFormData(prev => ({ ...prev, [name]: value }));
+
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
-      const response = await signup({
-        name: formData.name,
-        email: formData.email,
+      const whatsappRaw = (formData.whatsapp || formData.phone || '').trim();
+      const instagramClean = (formData.instagram || '').trim().replace(/^@/, '');
+
+      await signup({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
         password: formData.password,
-        restaurantName: formData.restaurantName,
-        phone: formData.phone
+        restaurantName: formData.restaurantName.trim(),
+        phone: formData.phone.trim(),
+        whatsapp: whatsappRaw,                 // 🆕
+        address: formData.address.trim(),      // 🆕
+        instagram: instagramClean              // 🆕
       });
-      
+
       setSuccess(true);
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
       console.error('Signup error:', error);
       setErrors({
@@ -107,8 +102,8 @@ const Signup = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Registrato Exitoso</h2>
-          <p className="text-gray-600 mb-4">Tu cuenta se creo exitosamente.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Registro Exitoso</h2>
+          <p className="text-gray-600 mb-4">Tu cuenta se creó exitosamente.</p>
           <p className="text-sm text-gray-500">Te redirigimos a página de inicio...</p>
         </div>
       </div>
@@ -125,9 +120,7 @@ const Signup = () => {
             </h1>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">Crea tu cuenta</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            ¡Comienza a administrar tu menú digital hoy mismo!
-          </p>
+          <p className="mt-2 text-sm text-gray-600">¡Comienza a administrar tu menú digital hoy mismo!</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
@@ -194,6 +187,51 @@ const Signup = () => {
               {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone}</p>}
             </div>
 
+            {/* 🆕 WhatsApp */}
+            <div>
+              <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 mb-2">WhatsApp (opcional)</label>
+              <input
+                id="whatsapp"
+                name="whatsapp"
+                type="tel"
+                value={formData.whatsapp}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white ${errors.whatsapp ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                placeholder="Ej: 54911..."
+              />
+              <p className="text-[11px] text-gray-500 mt-1">
+                Si lo dejás vacío, usamos el teléfono como WhatsApp.
+              </p>
+            </div>
+
+            {/* 🆕 Dirección del local */}
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">Dirección del local (opcional)</label>
+              <input
+                id="address"
+                name="address"
+                type="text"
+                value={formData.address}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white ${errors.address ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                placeholder="Ej: Av. Cabildo 1234, CABA"
+              />
+            </div>
+
+            {/* 🆕 Instagram */}
+            <div>
+              <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 mb-2">Instagram (opcional)</label>
+              <input
+                id="instagram"
+                name="instagram"
+                type="text"
+                value={formData.instagram}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white ${errors.instagram ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                placeholder="Ej: @mi_restaurante"
+              />
+            </div>
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
               <input
@@ -247,8 +285,6 @@ const Signup = () => {
             </p>
           </div>
         </div>
-
-        
       </div>
     </div>
   );
