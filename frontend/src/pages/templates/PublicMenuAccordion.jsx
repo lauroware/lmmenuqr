@@ -16,10 +16,11 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
 
   // Delivery: carrito + dirección + pago
   const [cart, setCart] = useState([]);
+  const [deliveryType, setDeliveryType] = useState("delivery"); // 🆕 "delivery" | "pickup"
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [anotacion, setAnotacion] = useState("");// 🆕 forma de pago
-  const [orderName, setOrderName] = useState(""); // 🆕 nombre del pedido
+  const [anotacion, setAnotacion] = useState("");
+  const [orderName, setOrderName] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
 
   // Padding dinámico para que el FAB no tape el contenido
@@ -80,8 +81,8 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       ];
     });
 
-    // UX: si estaba vacío, abrimos el carrito en móvil
-    if (!cartOpen && cart.length === 0) setCartOpen(true);
+    // ✅ UX: abrimos el carrito al agregar (sin depender de cart.length viejo)
+    if (!cartOpen) setCartOpen(true);
   };
 
   const decQty = (id) => {
@@ -110,6 +111,14 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       return sum + (Number.isFinite(p) ? p : 0) * (x.qty || 0);
     }, 0);
   }, [cart]);
+
+  // ---------------------------
+  // ✅ Si elige retiro, limpiamos dirección
+  // ---------------------------
+  useEffect(() => {
+    if (!isDelivery) return;
+    if (deliveryType === "pickup") setAddress("");
+  }, [isDelivery, deliveryType]);
 
   // ---------------------------
   // ✅ Padding inferior dinámico para FAB
@@ -142,39 +151,46 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   // ---------------------------
   // ✅ Armado del texto + WhatsApp
   // ---------------------------
- const buildWhatsAppText = () => {
-  const lines = cart.map((x) => {
-    const p = typeof x.price === "number" ? x.price : Number(x.price);
-    const price = Number.isFinite(p) ? p : 0;
-    const sub = price * (x.qty || 0);
-    return `• ${x.qty} x ${x.name} — $${money(price)} (sub: $${money(sub)})`;
-  });
+  const buildWhatsAppText = () => {
+    const lines = cart.map((x) => {
+      const p = typeof x.price === "number" ? x.price : Number(x.price);
+      const price = Number.isFinite(p) ? p : 0;
+      const sub = price * (x.qty || 0);
+      return `• ${x.qty} x ${x.name} — $${money(price)} (sub: $${money(sub)})`;
+    });
 
-  const name = orderName.trim() || "Cliente sin nombre";
-  const addr = address.trim();
-  const pay = paymentMethod.trim() || "No especificada";
-  const anot = anotacion.trim() || "Sin anotaciones";
+    const name = orderName.trim() || "Cliente sin nombre";
+    const pay = paymentMethod.trim() || "No especificada";
+    const anot = anotacion.trim() || "Sin anotaciones";
 
-  return (
-    `*Pedido DELIVERY*\n` +
-    `*Nombre:* ${name}\n` +
-    `*Comercio:* ${restaurantName}\n\n` +
-    `*Detalle:*\n${lines.join("\n")}\n\n` +
-    `*TOTAL:* $${money(total)}\n` +
-    `*Dirección:* ${addr}\n` +
-    `*Forma de pago:* ${pay}\n` +
-    `*Anotaciones:* ${anot}\n\n` +
-    `Verificá los datos de tu pedido.` +
-    `_Enviado desde el menú digital_`
-  );
-};
+    const isPickup = deliveryType === "pickup";
+    const addr = address.trim();
 
+    const entregaLine = isPickup
+      ? `*Entrega:* Retira en el local\n`
+      : `*Entrega:* Envío a domicilio\n*Dirección:* ${addr}\n`;
+
+    return (
+      `*Pedido*\n` +
+      `*Nombre:* ${name}\n` +
+      `*Comercio:* ${restaurantName}\n\n` +
+      entregaLine +
+      `\n*Detalle:*\n${lines.join("\n")}\n\n` +
+      `*TOTAL:* $${money(total)}\n` +
+      `*Forma de pago:* ${pay}\n` +
+      `*Anotaciones:* ${anot}\n\n` +
+      `Verificá los datos de tu pedido.\n` +
+      `_Enviado desde el menú digital_`
+    );
+  };
 
   const sendToWhatsApp = () => {
     if (!cart.length) return;
-    if (!address.trim()) return;
 
-    const comercioWhatsApp = "5491162366175"; // ✅ tu número (formato internacional)
+    const isPickup = deliveryType === "pickup";
+    if (!isPickup && !address.trim()) return; // ✅ solo exige dirección si es envío
+
+    const comercioWhatsApp = "5491162366175"; // tu número
 
     const text = buildWhatsAppText();
     window.open(
@@ -182,6 +198,9 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       "_blank"
     );
   };
+
+  const canSend =
+    cart.length > 0 && (deliveryType === "pickup" || address.trim().length > 0);
 
   return (
     <div className="min-h-screen" style={bgStyle}>
@@ -457,18 +476,50 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
 
                   <div className="mt-3 flex flex-col gap-2">
                     <input
-  value={orderName}
-  onChange={(e) => setOrderName(e.target.value)}
-  className="w-full border rounded-lg px-3 py-2 text-sm"
-  placeholder="Tu nombre"
-/>
-
-                    <input
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
+                      value={orderName}
+                      onChange={(e) => setOrderName(e.target.value)}
                       className="w-full border rounded-lg px-3 py-2 text-sm"
-                      placeholder="Dirección de entrega"
+                      placeholder="Tu nombre"
                     />
+
+                    {/* 🆕 Tipo de entrega */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryType("delivery")}
+                        className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                        style={{
+                          borderColor: deliveryType === "delivery" ? primaryColor : "#e5e7eb",
+                          color: deliveryType === "delivery" ? primaryColor : "#111827",
+                          backgroundColor: deliveryType === "delivery" ? `${primaryColor}12` : "white",
+                        }}
+                      >
+                        Envío a domicilio
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDeliveryType("pickup")}
+                        className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                        style={{
+                          borderColor: deliveryType === "pickup" ? primaryColor : "#e5e7eb",
+                          color: deliveryType === "pickup" ? primaryColor : "#111827",
+                          backgroundColor: deliveryType === "pickup" ? `${primaryColor}12` : "white",
+                        }}
+                      >
+                        Retiro en el local
+                      </button>
+                    </div>
+
+                    {/* Dirección solo si es envío */}
+                    {deliveryType === "delivery" && (
+                      <input
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full border rounded-lg px-3 py-2 text-sm"
+                        placeholder="Dirección de entrega"
+                      />
+                    )}
 
                     <input
                       value={paymentMethod}
@@ -484,12 +535,10 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                       placeholder="Aclaraciones de tu pedido"
                     />
 
-                
-
                     <button
                       className="w-full px-4 py-2 rounded-lg font-semibold text-sm text-white disabled:opacity-50"
                       style={{ backgroundColor: primaryColor }}
-                      disabled={cart.length === 0 || !address.trim()}
+                      disabled={!canSend}
                       onClick={sendToWhatsApp}
                     >
                       Enviar pedido por WhatsApp
