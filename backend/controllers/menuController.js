@@ -227,23 +227,19 @@ const deleteMenuItem = asyncHandler(async (req, res) => {
 // @desc    Get public menu by uniqueId
 // @route   GET /api/menu/:uniqueId
 // @access  Public
+// GET /api/menu/:uniqueId
 const getPublicMenu = asyncHandler(async (req, res) => {
-  const menu = await Menu.findOne({ uniqueId: req.params.uniqueId });
+  const menu = await Menu.findOne({ uniqueId: req.params.uniqueId })
+    .populate("admin", "whatsapp address instagram phone restaurantName") // 👈 trae esos campos del Admin
+    .lean();
 
-  if (menu) {
-    const menuItems = await MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 });
-
-    res.json({
-      restaurantName: menu.restaurantName,
-      uniqueId: menu.uniqueId,
-      theme: menu.theme || {},
-      menuItems,
-    });
-  } else {
-    console.error('Error 404: Menu not found');
+  if (!menu) {
     res.status(404);
-    throw new Error('Menu not found');
+    throw new Error("Menú no encontrado");
   }
+
+  // ✅ Respondemos con admin incluido
+  return res.json(menu);
 });
 
 
