@@ -242,27 +242,29 @@ const getPublicMenu = asyncHandler(async (req, res) => {
   }
 
   const [menuItems, admin] = await Promise.all([
-    MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 }),
-    Admin.findById(menu.admin).select('whatsapp address instagram phone').lean(),
-  ]);
+  MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 }),
+  Admin.findById(menu.admin)
+    .select('whatsapp address instagram phone paymentMethods')
+    .lean(),
+]);
 
   const whatsapp = String(admin?.whatsapp || admin?.phone || '').trim();
   const address = String(admin?.address || '').trim();
   const instagram = String(admin?.instagram || '').trim().replace(/^@/, '');
 
-  res.json({
-    restaurantName: menu.restaurantName,
-    uniqueId: menu.uniqueId,
-    theme: menu.theme || {},
-    menuItems,
+ res.json({
+  restaurantName: menu.restaurantName,
+  uniqueId: menu.uniqueId,
+  theme: menu.theme || {},
+  menuItems,
 
-    // ✅ extras para delivery
-    whatsapp,
-    address,
-    instagram,
-    paymentMethods: menu.admin?.paymentMethods || [],
+  whatsapp: String(admin?.whatsapp || admin?.phone || '').trim(),
+  address: String(admin?.address || '').trim(),
+  instagram: String(admin?.instagram || '').trim().replace(/^@/, ''),
 
-  });
+  // ✅ acá está la clave
+  paymentMethods: Array.isArray(admin?.paymentMethods) ? admin.paymentMethods : [],
+});
 });
 
 

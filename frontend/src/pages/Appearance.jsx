@@ -57,7 +57,17 @@ const Appearance = () => {
         const menu = await getAdminMenu();
         const t = menu?.theme || {};
 
-        const profile = await getAdminProfile();
+        = await getAdminProfile();
+console.log("PROFILE >>>", profile);
+const pm =
+  profile?.paymentMethods ??
+  profile?.admin?.paymentMethods ??
+  profile?.data?.paymentMethods ??
+  profile?.data?.admin?.paymentMethods ??
+  [];
+  
+setPaymentMethods(Array.isArray(pm) ? pm : []);
+
 setPaymentMethods(Array.isArray(profile?.paymentMethods) ? profile.paymentMethods : []);
 
 
