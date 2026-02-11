@@ -16,7 +16,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
 
   // Delivery: carrito + dirección + pago
   const [cart, setCart] = useState([]);
-  const [deliveryType, setDeliveryType] = useState("delivery"); // 🆕 "delivery" | "pickup"
+  const [deliveryType, setDeliveryType] = useState("delivery"); // "delivery" | "pickup"
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [anotacion, setAnotacion] = useState("");
@@ -72,16 +72,11 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       }
       return [
         ...prev,
-        {
-          _id: item._id,
-          name: item.name,
-          price: item.price,
-          qty: 1
-        }
+        { _id: item._id, name: item.name, price: item.price, qty: 1 }
       ];
     });
 
-    // ✅ UX: abrimos el carrito al agregar (sin depender de cart.length viejo)
+    // UX: abrimos el carrito al agregar
     if (!cartOpen) setCartOpen(true);
   };
 
@@ -99,11 +94,12 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     );
   };
 
-  const clearCart = () => {
-    setCart([]);
-  };
+  const clearCart = () => setCart([]);
 
-  const itemsCount = useMemo(() => cart.reduce((s, x) => s + (x.qty || 0), 0), [cart]);
+  const itemsCount = useMemo(
+    () => cart.reduce((s, x) => s + (x.qty || 0), 0),
+    [cart]
+  );
 
   const total = useMemo(() => {
     return cart.reduce((sum, x) => {
@@ -113,7 +109,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   }, [cart]);
 
   // ---------------------------
-  // ✅ Si elige retiro, limpiamos dirección
+  // Si elige retiro, limpiamos dirección
   // ---------------------------
   useEffect(() => {
     if (!isDelivery) return;
@@ -121,7 +117,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   }, [isDelivery, deliveryType]);
 
   // ---------------------------
-  // ✅ Padding inferior dinámico para FAB
+  // Padding inferior dinámico para FAB
   // ---------------------------
   useEffect(() => {
     if (!isDelivery) return;
@@ -149,7 +145,22 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   }, [isDelivery, cartOpen]);
 
   // ---------------------------
-  // ✅ Armado del texto + WhatsApp
+  // Links del comercio (solo delivery)
+  // ---------------------------
+  const adminAddress = (data?.address || "").trim();
+
+  const mapsUrl = adminAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adminAddress)}`
+    : null;
+
+  const igUser = String(data?.instagram || "")
+    .trim()
+    .replace(/^@/, "")
+    .replace(/\s+/g, "");
+  const igUrl = igUser ? `https://instagram.com/${igUser}` : null;
+
+  // ---------------------------
+  // Armado del texto + WhatsApp
   // ---------------------------
   const buildWhatsAppText = () => {
     const lines = cart.map((x) => {
@@ -188,10 +199,10 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     if (!cart.length) return;
 
     const isPickup = deliveryType === "pickup";
-    if (!isPickup && !address.trim()) return; // ✅ solo exige dirección si es envío
+    if (!isPickup && !address.trim()) return;
 
     const comercioWhatsApp = String(data?.whatsapp || data?.phone || "").replace(/\D/g, "");
-if (!comercioWhatsApp) return;
+    if (!comercioWhatsApp) return;
 
     const text = buildWhatsAppText();
     window.open(
@@ -200,21 +211,7 @@ if (!comercioWhatsApp) return;
     );
   };
 
-  // ✅ Links del comercio (solo delivery)
-const adminAddress = (data?.address || "").trim();
-
-const mapsUrl = adminAddress
-  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adminAddress)}`
-  : null;
-
-const igUser = String(data?.instagram || "").trim().replace(/^@/, "");
-const igUrl = igUser
-  ? `https://instagram.com/${encodeURIComponent(igUser)}`
-  : null;
-
-
-  const canSend =
-    cart.length > 0 && (deliveryType === "pickup" || address.trim().length > 0);
+  const canSend = cart.length > 0 && (deliveryType === "pickup" || address.trim().length > 0);
 
   return (
     <div className="min-h-screen" style={bgStyle}>
@@ -242,53 +239,44 @@ const igUrl = igUser
         style={{ paddingBottom: isDelivery ? `${bottomPad}px` : undefined }}
       >
         {/* PORTADA (solo salón) */}
-{!isDelivery && theme.coverUrl && (
-  <img
-    src={theme.coverUrl}
-    alt="Portada"
-    className="w-full h-44 sm:h-56 object-cover rounded-2xl shadow-sm border border-white/60"
-  />
-)}
+        {!isDelivery && theme.coverUrl && (
+          <img
+            src={theme.coverUrl}
+            alt="Portada"
+            className="w-full h-44 sm:h-56 object-cover rounded-2xl shadow-sm border border-white/60"
+          />
+        )}
 
+        {/* LINKS DEL COMERCIO (solo delivery) */}
+        {isDelivery && (mapsUrl || igUrl) && (
+          <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm p-4">
+            <div className="flex flex-wrap gap-2 justify-center">
+              {mapsUrl && (
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                  style={{ borderColor: primaryColor, color: primaryColor }}
+                >
+                  📍 Cómo llegar
+                </a>
+              )}
 
-{/* Links del comercio (solo delivery) */}
-{isDelivery && (mapsUrl || igUrl) && (
-  <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm p-4">
-    <div className="flex flex-wrap gap-2">
-      {mapsUrl && (
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="px-3 py-2 rounded-lg border text-sm font-semibold"
-          style={{ borderColor: primaryColor, color: primaryColor }}
-        >
-          📍 Cómo llegar
-        </a>
-      )}
-
-      {igUrl && (
-        <a
-          href={igUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="px-3 py-2 rounded-lg border text-sm font-semibold"
-          style={{ borderColor: primaryColor, color: primaryColor }}
-        >
-          📷 Instagram @{igUser}
-        </a>
-      )}
-    </div>
-
-    {!mapsUrl && (
-      <p className="text-xs text-gray-500 mt-2">
-        El comercio todavía no cargó la dirección.
-      </p>
-    )}
-  </div>
-)}
-
-
+              {igUrl && (
+                <a
+                  href={igUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                  style={{ borderColor: primaryColor, color: primaryColor }}
+                >
+                  📷 Instagram @{igUser}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ACCORDION */}
         <div className="space-y-3">
@@ -382,7 +370,7 @@ const igUrl = igUser
                           </div>
                         </div>
 
-                        {/* DERECHA: PRECIO + AGREGAR (solo delivery) */}
+                        {/* DERECHA */}
                         <div className="flex flex-col items-end gap-2">
                           <span className="font-bold whitespace-nowrap" style={{ color: primaryColor }}>
                             ${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}
@@ -442,7 +430,9 @@ const igUrl = igUser
 
                 <div className="min-w-0 text-left">
                   <p className="text-sm font-bold text-gray-900 truncate">
-                    {itemsCount > 0 ? `${itemsCount} item${itemsCount !== 1 ? 's' : ''} en el carrito` : "Carrito vacío"}
+                    {itemsCount > 0
+                      ? `${itemsCount} item${itemsCount !== 1 ? 's' : ''} en el carrito`
+                      : "Carrito vacío"}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
                     Tocá para ver y confirmar
@@ -458,23 +448,20 @@ const igUrl = igUser
         </div>
       )}
 
-      {/* ✅ Sheet del carrito (colapsable) */}
+      {/* ✅ Sheet del carrito */}
       {isDelivery && cartOpen && (
         <>
-          {/* Overlay */}
           <div
             className="fixed inset-0 z-30 bg-black/40"
             onClick={() => setCartOpen(false)}
           />
 
-          {/* Panel */}
           <div
             className="fixed left-0 right-0 bottom-0 z-40"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
             <div className="max-w-5xl mx-auto px-4 pb-4">
               <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
-                {/* Header sheet */}
                 <div className="p-4 flex items-center justify-between border-b">
                   <div>
                     <h3 className="font-bold text-gray-900">Tu pedido</h3>
@@ -501,7 +488,6 @@ const igUrl = igUser
                   </div>
                 </div>
 
-                {/* Body sheet */}
                 <div className="p-4">
                   {cart.length === 0 ? (
                     <p className="text-sm text-gray-500">
@@ -536,7 +522,6 @@ const igUrl = igUser
                       placeholder="Tu nombre"
                     />
 
-                    {/* 🆕 Tipo de entrega */}
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
@@ -565,7 +550,6 @@ const igUrl = igUser
                       </button>
                     </div>
 
-                    {/* Dirección solo si es envío */}
                     {deliveryType === "delivery" && (
                       <input
                         value={address}
