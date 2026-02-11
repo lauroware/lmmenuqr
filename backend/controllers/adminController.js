@@ -130,6 +130,7 @@ const authAdmin = asyncHandler(async (req, res) => {
   whatsapp: admin.whatsapp,
   address: admin.address,
   instagram: admin.instagram,
+  paymentMethods: admin.paymentMethods,
   token: generateToken(admin._id),
 });
   } else {
@@ -218,6 +219,16 @@ const updateAdminProfile = asyncHandler(async (req, res) => {
 admin.address = req.body.address ?? admin.address;
 admin.instagram = req.body.instagram ? req.body.instagram.replace(/^@/, "") : admin.instagram;
 
+if (Array.isArray(req.body.paymentMethods)) {
+  admin.paymentMethods = req.body.paymentMethods
+    .map(s => String(s).trim().toLowerCase())
+    .filter(Boolean);
+}
+
+admin.paymentMethods = Array.isArray(req.body.paymentMethods)
+  ? req.body.paymentMethods
+  : admin.paymentMethods;
+
 
     if (req.body.password) {
       admin.password = req.body.password;
@@ -234,6 +245,8 @@ admin.instagram = req.body.instagram ? req.body.instagram.replace(/^@/, "") : ad
       whatsapp: updatedAdmin.whatsapp,
 address: updatedAdmin.address,
 instagram: updatedAdmin.instagram,
+paymentMethods: admin.paymentMethods,
+
 
       token: generateToken(updatedAdmin._id),
     });

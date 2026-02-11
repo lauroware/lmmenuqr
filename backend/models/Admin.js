@@ -9,12 +9,18 @@ const adminSchema = mongoose.Schema(
     restaurantName: { type: String, required: true },
     phone: { type: String, required: true },
 
-    // 🆕 NUEVOS CAMPOS
+    // 🔹 Datos públicos del comercio
     whatsapp: { type: String, default: "" },
     address: { type: String, default: "" },
     instagram: { type: String, default: "" },
 
-    // ✅ Reset password
+    // 🆕 Medios de pago configurables
+    paymentMethods: {
+      type: [String],
+      default: [], // Ej: ["mercadopago", "transferencia", "tarjeta", "efectivo", "modo", "bitcoin"]
+    },
+
+    // 🔐 Reset password
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },
@@ -22,7 +28,6 @@ const adminSchema = mongoose.Schema(
 );
 
 adminSchema.pre('save', async function (next) {
-  // IMPORTANTE: si no se modifica la pass, no rehashees
   if (!this.isModified('password')) return next();
 
   const salt = await bcrypt.genSalt(10);
@@ -34,5 +39,4 @@ adminSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-// ✅ ESTO ES CLAVE
 module.exports = mongoose.model('Admin', adminSchema);

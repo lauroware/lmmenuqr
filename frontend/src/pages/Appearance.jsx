@@ -1,12 +1,25 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
-import { getAdminMenu, uploadImage, updateMenuTheme } from '../api';
+import { getAdminProfile, updateAdminProfile, getAdminMenu, uploadImage, updateMenuTheme } from '../api';
+
 
 const MAX_MB = 5;
+
+const PAYMENT_OPTIONS = [
+  { key: 'efectivo', label: 'Efectivo' },
+  { key: 'transferencia', label: 'Transferencia' },
+  { key: 'mercadopago', label: 'Mercado Pago' },
+  { key: 'tarjeta', label: 'Tarjeta' },
+];
+
 
 const Appearance = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+   // ✅ medios de pago (DELIVERY CONFIG)
+  const [paymentMethods, setPaymentMethods] = useState([]); // strings
+  const [paymentOther, setPaymentOther] = useState('');
 
   // theme persistido en backend
   const [theme, setTheme] = useState({
@@ -43,6 +56,10 @@ const Appearance = () => {
       try {
         const menu = await getAdminMenu();
         const t = menu?.theme || {};
+
+        const profile = await getAdminProfile();
+setPaymentMethods(Array.isArray(profile?.paymentMethods) ? profile.paymentMethods : []);
+
 
         // robusto: si el backend no trae layout, mantenemos el default
         setTheme((prev) => ({
@@ -190,6 +207,21 @@ const Appearance = () => {
         coverUrl: nextTheme.coverUrl || '',
         backgroundValue: nextTheme.backgroundType === 'image' ? (nextTheme.backgroundValue || '') : '',
       });
+
+      const cleaned = [
+  ...paymentMethods,
+  paymentOther.trim(),
+].filter(Boolean);
+
+// opcional: evitar duplicados (por si “Otro” coincide)
+const unique = Array.from(new Set(cleaned.map((x) => x.toLowerCase().trim())));
+
+await updateAdminProfile({ paymentMethods: unique });
+
+// refresco local
+setPaymentMethods(unique);
+setPaymentOther("");
+
 
       alert('Apariencia guardada ✅');
     } catch (e) {
@@ -556,6 +588,49 @@ const Appearance = () => {
                 )}
               </div>
             </div>
+
+            {/* ✅ Configuración delivery */}
+<div className="bg-white rounded-2xl border border-gray-100 p-5">
+  <h3 className="font-bold text-gray-900 mb-1">Configuración delivery</h3>
+  <p className="text-xs text-gray-500 mb-4">
+    Elegí los medios de pago que van a aparecer al cliente.
+  </p>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    {PAYMENT_OPTIONS.map((opt) => {
+      const checked = paymentMethods.includes(opt.key);
+      return (
+        <label key={opt.key} className="flex items-center gap-3 border rounded-lg px-3 py-2">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => {
+              const on = e.target.checked;
+              setPaymentMethods((prev) =>
+                on ? [...prev, opt.key] : prev.filter((x) => x !== opt.key)
+              );
+            }}
+          />
+          <span className="text-sm text-gray-800">{opt.label}</span>
+        </label>
+      );
+    })}
+  </div>
+
+  <div className="mt-3">
+    <label className="block text-sm font-medium text-gray-700 mb-2">Otro (opcional)</label>
+    <input
+      value={paymentOther}
+      onChange={(e) => setPaymentOther(e.target.value)}
+      className="w-full px-4 py-3 border rounded-lg border-gray-300"
+      placeholder="Ej: Débito, MODO, QR, etc."
+    />
+    <p className="text-xs text-gray-500 mt-2">
+      Tip: si lo completás, lo vamos a guardar como un método más.
+    </p>
+  </div>
+</div>
+
 
             {/* Bottom save (mobile friendly) */}
             <div className="pt-4 border-t border-gray-100">

@@ -260,6 +260,8 @@ const getPublicMenu = asyncHandler(async (req, res) => {
     whatsapp,
     address,
     instagram,
+    paymentMethods: menu.admin?.paymentMethods || [],
+
   });
 });
 

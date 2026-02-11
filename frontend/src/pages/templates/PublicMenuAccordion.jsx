@@ -167,6 +167,46 @@ const waUrl = waNumber
   ? `https://wa.me/${waNumber}`
   : null;
 
+// ---------------------------
+// Métodos de pago del comercio (desde el admin)
+// ---------------------------
+const paymentOptionsFromAdmin = useMemo(() => {
+  // puede venir en distintas keys según cómo lo devuelvas
+  const raw =
+    data?.paymentMethods ||
+    data?.admin?.paymentMethods ||
+    data?.menu?.paymentMethods ||
+    [];
+
+  // normalizar a array de strings
+  const arr = Array.isArray(raw) ? raw : [];
+  return arr
+    .map((x) => String(x || '').trim())
+    .filter(Boolean);
+}, [data]);
+
+// labels “lindos” para los keys estándar
+const PAYMENT_LABELS = {
+  efectivo: 'Efectivo',
+  transferencia: 'Transferencia',
+  mercadopago: 'Mercado Pago',
+  tarjeta: 'Tarjeta',
+};
+
+const paymentOptionsLabeled = useMemo(() => {
+  return paymentOptionsFromAdmin.map((key) => ({
+    key,
+    label: PAYMENT_LABELS[key] || key, // si es “otro”, queda como está
+  }));
+}, [paymentOptionsFromAdmin]);
+
+// si el comercio tiene opciones y el usuario todavía no eligió, seteamos la primera
+useEffect(() => {
+  if (!isDelivery) return;
+  if (paymentMethod) return;
+  if (paymentOptionsFromAdmin.length === 0) return;
+  setPaymentMethod(paymentOptionsFromAdmin[0]);
+}, [isDelivery, paymentMethod, paymentOptionsFromAdmin]);
 
   // ---------------------------
   // Armado del texto + WhatsApp
@@ -180,7 +220,10 @@ const waUrl = waNumber
     });
 
     const name = orderName.trim() || "Cliente sin nombre";
-    const pay = paymentMethod.trim() || "No especificada";
+   const payKey = paymentMethod.trim();
+const pay =
+  (PAYMENT_LABELS[payKey] || payKey) || "No especificada";
+
     const anot = anotacion.trim() || "Sin anotaciones";
 
     const isPickup = deliveryType === "pickup";
@@ -585,12 +628,26 @@ const waUrl = waNumber
                       />
                     )}
 
-                    <input
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                      placeholder="Forma de pago"
-                    />
+                    {paymentOptionsLabeled.length > 0 ? (
+  <select
+    value={paymentMethod}
+    onChange={(e) => setPaymentMethod(e.target.value)}
+    className="w-full border rounded-lg px-3 py-2 text-sm bg-white"
+  >
+    {paymentOptionsLabeled.map((opt) => (
+      <option key={opt.key} value={opt.key}>
+        {opt.label}
+      </option>
+    ))}
+  </select>
+) : (
+  <input
+    value={paymentMethod}
+    onChange={(e) => setPaymentMethod(e.target.value)}
+    className="w-full border rounded-lg px-3 py-2 text-sm"
+    placeholder="Forma de pago (ej: efectivo, transferencia...)"
+  />
+)}
 
                     <input
                       value={anotacion}
