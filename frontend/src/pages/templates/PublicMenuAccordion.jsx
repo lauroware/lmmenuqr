@@ -272,6 +272,18 @@ const waUrl = waNumber
                 </a>
               )}
 
+                  {waUrl && (
+  <a
+    href={waUrl}
+    target="_blank"
+    rel="noreferrer"
+    className="px-3 py-2 rounded-lg border text-sm font-semibold"
+    style={{ borderColor: primaryColor, color: primaryColor }}
+  >
+    💬 WhatsApp
+  </a>
+)}
+
               {igUrl && (
                 <a
                   href={igUrl}
@@ -285,19 +297,11 @@ const waUrl = waNumber
               )}
             </div>
           </div>
+
+          
         )}
 
-        {waUrl && (
-  <a
-    href={waUrl}
-    target="_blank"
-    rel="noreferrer"
-    className="px-3 py-2 rounded-lg border text-sm font-semibold"
-    style={{ borderColor: primaryColor, color: primaryColor }}
-  >
-    💬 WhatsApp
-  </a>
-)}
+    
 
 
         {/* ACCORDION */}
