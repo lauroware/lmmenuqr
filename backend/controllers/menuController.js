@@ -3,6 +3,8 @@ const QRCode = require('qrcode');
 const Menu = require('../models/Menu');
 const MenuItem = require('../models/MenuItem');
 const generateUniqueId = require('../utils/generateUniqueId');
+const Admin = require('../models/Admin');
+
 
 
 // @desc    Create a menu for the logged-in admin
@@ -227,20 +229,40 @@ const deleteMenuItem = asyncHandler(async (req, res) => {
 // @desc    Get public menu by uniqueId
 // @route   GET /api/menu/:uniqueId
 // @access  Public
-// GET /api/menu/:uniqueId
+// @desc    Get public menu by uniqueId
+// @route   GET /api/menu/:uniqueId
+// @access  Public
 const getPublicMenu = asyncHandler(async (req, res) => {
-  const menu = await Menu.find({ uniqueId: req.params.uniqueId })
-    .populate("admin", "whatsapp address instagram phone restaurantName") // 👈 trae esos campos del Admin
-    .lean();
+  const menu = await Menu.findOne({ uniqueId: req.params.uniqueId });
 
   if (!menu) {
+    console.error('Error 404: Menu not found');
     res.status(404);
-    throw new Error("Menú no encontrado");
+    throw new Error('Menu not found');
   }
 
-  // ✅ Respondemos con admin incluido
-  return res.json(menu);
+  const [menuItems, admin] = await Promise.all([
+    MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 }),
+    Admin.findById(menu.admin).select('whatsapp address instagram phone').lean(),
+  ]);
+
+  const whatsapp = String(admin?.whatsapp || admin?.phone || '').trim();
+  const address = String(admin?.address || '').trim();
+  const instagram = String(admin?.instagram || '').trim().replace(/^@/, '');
+
+  res.json({
+    restaurantName: menu.restaurantName,
+    uniqueId: menu.uniqueId,
+    theme: menu.theme || {},
+    menuItems,
+
+    // ✅ extras para delivery
+    whatsapp,
+    address,
+    instagram,
+  });
 });
+
 
 
 // @desc    Generate QR code for the menu
