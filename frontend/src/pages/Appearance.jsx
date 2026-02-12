@@ -62,7 +62,7 @@ const Appearance = () => {
         const menu = await getAdminMenu();
         const t = menu?.theme || {};
 
-        = await getAdminProfile();
+       const profile = await getAdminProfile();
 console.log("PROFILE >>>", profile);
 const pm =
   profile?.paymentMethods ??
@@ -71,7 +71,6 @@ const pm =
   profile?.data?.admin?.paymentMethods ??
   [];
   
-setPaymentMethods(Array.isArray(pm) ? pm : []);
 
 setPaymentMethods(Array.isArray(profile?.paymentMethods) ? profile.paymentMethods : []);
 
@@ -685,30 +684,7 @@ setPaymentPercents(nextPercents);
     })}
   </div>
 
-  <div className="mt-3">
-    <label className="block text-sm font-medium text-gray-700 mb-2">Otro (opcional)</label>
-    <input
-      value={paymentOther}
-      onChange={(e) => setPaymentOther(e.target.value)}
-      className="w-full px-4 py-3 border rounded-lg border-gray-300"
-      placeholder="Ej: Débito, MODO, QR, etc."
-    />
 
- <div className="mt-2">
-      <label className="block text-xs text-gray-600 mb-1">Recargo % para “Otro” (opcional)</label>
-      <input
-        type="number"
-        step="0.1"
-        value={paymentOtherPercent}
-        onChange={(e) => setPaymentOtherPercent(e.target.value)}
-        className="w-full px-4 py-3 border rounded-lg border-gray-300 text-sm"
-        placeholder="0"
-      />
-    </div>
-
-    <p className="text-xs text-gray-500 mt-2">
-      Tip: si lo completás, lo vamos a guardar como un método más.
-    </p>
   </div>
 </div>
 
@@ -728,7 +704,7 @@ setPaymentPercents(nextPercents);
             </div>
           </div>
         </div>
-      </div>
+     
     </AdminLayout>
   );
 };
