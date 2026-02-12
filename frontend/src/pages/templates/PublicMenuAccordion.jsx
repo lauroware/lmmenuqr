@@ -197,10 +197,26 @@ const paymentPercentsFromAdmin = useMemo(() => {
     data?.menu?.paymentMethodPercents ||
     {};
 
-  if (!raw) return {};
-  if (typeof raw !== 'object') return {};
-  return raw;
+  if (!raw || typeof raw !== "object") return {};
+
+  const normalized = {};
+  for (const [k, v] of Object.entries(raw)) {
+    const key = String(k || "").trim().toLowerCase();
+    const num = Number(v);
+    if (!key) continue;
+    normalized[key] = Number.isFinite(num) ? num : 0;
+  }   return normalized;
 }, [data]);
+
+
+
+
+{selectedPercent > 0 && (
+  <p className="text-xs text-gray-500">
+    Recargo {selectedPercent}%: ${money(surchargeAmount)}
+  </p>
+)}
+
 
 
 // labels “lindos” para los keys estándar
@@ -230,20 +246,40 @@ useEffect(() => {
 
 
 
-// recargo % y total final
+// ============================
+// SUBTOTAL (sin recargo)
+// ============================
+const subtotal = useMemo(() => {
+  return cart.reduce((sum, x) => {
+    const p = typeof x.price === "number" ? x.price : Number(x.price);
+    return sum + (Number.isFinite(p) ? p : 0) * (x.qty || 0);
+  }, 0);
+}, [cart]);
+
+
+// ============================
+// % de recargo según medio de pago
+// ============================
 const feePct = useMemo(() => {
-  const key = String(paymentMethod || '').trim();
+  const key = String(paymentMethod || "")
+    .trim()
+    .toLowerCase();
+
   if (!key) return 0;
+
   const raw = paymentPercentsFromAdmin?.[key];
   const num = Number(raw);
+
   return Number.isFinite(num) ? num : 0;
 }, [paymentMethod, paymentPercentsFromAdmin]);
 
+// ============================
+// TOTAL FINAL (con recargo)
+// ============================
 const totalFinal = useMemo(() => {
-  const pct = Number(feePct);
-  if (!Number.isFinite(pct) || pct === 0) return total;
-  return total * (1 + pct / 100);
-}, [total, feePct]);
+  if (!feePct) return subtotal;
+  return subtotal * (1 + feePct / 100);
+}, [subtotal, feePct]);
 
 
   // ---------------------------
