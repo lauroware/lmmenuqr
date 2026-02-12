@@ -6,11 +6,21 @@ const money = (n) => {
   return num.toFixed(2);
 };
 
+// Normaliza keys para matchear bien (espacios, mayúsculas, etc.)
 const normKey = (v) =>
   String(v || "")
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, " "); // normaliza espacios
+    .replace(/\s+/g, " ");
+
+const PAYMENT_LABELS = {
+  efectivo: "Efectivo",
+  transferencia: "Transferencia",
+  mercadopago: "Mercado Pago",
+  tarjeta: "Tarjeta",
+  modo: "Modo",
+  otro: "Otro",
+};
 
 const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const isDelivery = mode === "delivery";
@@ -47,78 +57,13 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const restaurantName = data?.restaurantName || "Menú";
   const menuItems = Array.isArray(data?.menuItems) ? data.menuItems : [];
 
-  // ============================
-  // Métodos de pago (ADMIN)
-  // ============================
-  const paymentOptionsFromAdmin = useMemo(() => {
-    const raw =
-      data?.paymentMethods ||
-      data?.admin?.paymentMethods ||
-      data?.menu?.paymentMethods ||
-      [];
-
-    const arr = Array.isArray(raw) ? raw : [];
-    return arr
-      .map((x) => String(x || "").trim())
-      .filter(Boolean);
-  }, [data]);
-
-  const paymentPercentsFromAdmin = useMemo(() => {
-    const raw =
-      data?.paymentMethodPercents ||
-      data?.admin?.paymentMethodPercents ||
-      data?.menu?.paymentMethodPercents ||
-      {};
-
-    if (!raw || typeof raw !== "object") return {};
-
-    // Normalizamos keys a minúsculas
-    const normalized = {};
-    for (const [k, v] of Object.entries(raw)) {
-      const key = normKey(k);
-      const num = Number(v);
-      if (!key) continue;
-      normalized[key] = Number.isFinite(num) ? num : 0;
-    }
-    return normalized;
-  }, [data]);
-
-  const PAYMENT_LABELS = {
-    efectivo: "Efectivo",
-    transferencia: "Transferencia",
-    "mercado pago": "Mercado Pago",
-    mercadopago: "Mercado Pago",
-    tarjeta: "Tarjeta",
-    modo: "Modo",
-    otro: "Otro",
-  };
-
-  const paymentOptionsLabeled = useMemo(() => {
-    return paymentOptionsFromAdmin.map((original) => {
-      const k = normKey(original);
-      return {
-        value: original, // lo que se guarda en el select
-        label: PAYMENT_LABELS[k] || original,
-      };
-    });
-  }, [paymentOptionsFromAdmin]);
-
-  // Si el comercio tiene opciones y el usuario todavía no eligió, seteamos la primera
-  useEffect(() => {
-    if (!isDelivery) return;
-    if (paymentMethod) return;
-    if (paymentOptionsFromAdmin.length === 0) return;
-    setPaymentMethod(paymentOptionsFromAdmin[0]);
-  }, [isDelivery, paymentMethod, paymentOptionsFromAdmin]);
-
-  // ============================
-  // Categorías / agrupado
-  // ============================
+  // categorías únicas
   const categories = useMemo(
     () => [...new Set(menuItems.map((i) => i.category).filter(Boolean))],
     [menuItems]
   );
 
+  // items agrupados
   const itemsByCategory = useMemo(() => {
     const map = {};
     for (const item of menuItems) {
@@ -129,12 +74,11 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     return map;
   }, [menuItems]);
 
-  // ============================
-  // Carrito
-  // ============================
+  // ---------------------------
+  // Carrito: helpers
+  // ---------------------------
   const addToCart = (item) => {
-    const isAvailable = item?.available !== false; // si no existe, asumimos true
-    if (!isAvailable) return;
+    if (!item?.available) return;
 
     setCart((prev) => {
       const found = prev.find((x) => x._id === item._id);
@@ -170,9 +114,59 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     [cart]
   );
 
-  // ============================
-  // Subtotal / Recargo / Total
-  // ============================
+  // ---------------------------
+  // Métodos de pago del comercio (desde el admin)
+  // ---------------------------
+  const paymentOptionsFromAdmin = useMemo(() => {
+    const raw =
+      data?.paymentMethods ||
+      data?.admin?.paymentMethods ||
+      data?.menu?.paymentMethods ||
+      [];
+    const arr = Array.isArray(raw) ? raw : [];
+    return arr.map((x) => String(x || "").trim()).filter(Boolean);
+  }, [data]);
+
+  const paymentPercentsFromAdmin = useMemo(() => {
+    const raw =
+      data?.paymentMethodPercents ||
+      data?.admin?.paymentMethodPercents ||
+      data?.menu?.paymentMethodPercents ||
+      {};
+    if (!raw || typeof raw !== "object") return {};
+
+    // normalizamos keys a lower y espacios simples
+    const normalized = {};
+    for (const [k, v] of Object.entries(raw)) {
+      const key = normKey(k);
+      const num = Number(v);
+      if (!key) continue;
+      normalized[key] = Number.isFinite(num) ? num : 0;
+    }
+    return normalized;
+  }, [data]);
+
+  const paymentOptionsLabeled = useMemo(() => {
+    return paymentOptionsFromAdmin.map((key) => {
+      const nk = normKey(key);
+      return {
+        key, // valor original
+        label: PAYMENT_LABELS[nk] || key,
+      };
+    });
+  }, [paymentOptionsFromAdmin]);
+
+  // si hay opciones y no eligió, setear la primera
+  useEffect(() => {
+    if (!isDelivery) return;
+    if (paymentMethod) return;
+    if (paymentOptionsFromAdmin.length === 0) return;
+    setPaymentMethod(paymentOptionsFromAdmin[0]);
+  }, [isDelivery, paymentMethod, paymentOptionsFromAdmin]);
+
+  // ---------------------------
+  // Cálculos: subtotal, % y total final
+  // ---------------------------
   const subtotal = useMemo(() => {
     return cart.reduce((sum, x) => {
       const p = typeof x.price === "number" ? x.price : Number(x.price);
@@ -180,41 +174,36 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     }, 0);
   }, [cart]);
 
-  // % recargo según medio de pago (MATCH por key normalizada)
   const feePct = useMemo(() => {
     const key = normKey(paymentMethod);
     if (!key) return 0;
 
-    // intentamos por key exacta
+    // match directo
     if (paymentPercentsFromAdmin[key] != null) return Number(paymentPercentsFromAdmin[key]) || 0;
 
-    // fallback: si el admin guardó "MercadoPago" pero vos guardás "Mercado Pago"
-    // buscamos por inclusión
+    // fallback: ignora espacios (MercadoPago vs Mercado Pago)
     const entries = Object.entries(paymentPercentsFromAdmin);
     for (const [k, v] of entries) {
-      if (k === key) return Number(v) || 0;
       if (k.replace(/\s+/g, "") === key.replace(/\s+/g, "")) return Number(v) || 0;
     }
     return 0;
   }, [paymentMethod, paymentPercentsFromAdmin]);
 
-  const totalFinal = useMemo(() => {
-    if (!feePct) return subtotal;
-    return subtotal * (1 + feePct / 100);
-  }, [subtotal, feePct]);
+  const feeAmount = useMemo(() => subtotal * (feePct / 100), [subtotal, feePct]);
 
-  const feeAmount = useMemo(() => {
-    return totalFinal - subtotal;
-  }, [totalFinal, subtotal]);
+  const totalFinal = useMemo(() => subtotal + feeAmount, [subtotal, feeAmount]);
 
-  // ============================
-  // Lógica delivery
-  // ============================
+  // ---------------------------
+  // Si elige retiro, limpiamos dirección
+  // ---------------------------
   useEffect(() => {
     if (!isDelivery) return;
     if (deliveryType === "pickup") setAddress("");
   }, [isDelivery, deliveryType]);
 
+  // ---------------------------
+  // Padding inferior dinámico para FAB
+  // ---------------------------
   useEffect(() => {
     if (!isDelivery) return;
 
@@ -228,6 +217,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     return () => window.removeEventListener("resize", update);
   }, [isDelivery, itemsCount, totalFinal]);
 
+  // Bloquear scroll del fondo cuando el sheet está abierto
   useEffect(() => {
     if (!isDelivery) return;
     if (!cartOpen) return;
@@ -239,11 +229,10 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     };
   }, [isDelivery, cartOpen]);
 
-  // ============================
-  // Links comercio
-  // ============================
+  // ---------------------------
+  // Links del comercio (solo delivery)
+  // ---------------------------
   const adminAddress = (data?.address || "").trim();
-
   const mapsUrl = adminAddress
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adminAddress)}`
     : null;
@@ -254,9 +243,9 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const waNumber = String(data?.whatsapp || "").trim().replace(/\D/g, "");
   const waUrl = waNumber ? `https://wa.me/${waNumber}` : null;
 
-  // ============================
+  // ---------------------------
   // WhatsApp
-  // ============================
+  // ---------------------------
   const buildWhatsAppText = () => {
     const lines = cart.map((x) => {
       const p = typeof x.price === "number" ? x.price : Number(x.price);
@@ -266,8 +255,8 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     });
 
     const name = orderName.trim() || "Cliente sin nombre";
-    const payKey = normKey(paymentMethod);
-    const payLabel = PAYMENT_LABELS[payKey] || paymentMethod || "No especificada";
+    const payKeyNorm = normKey(paymentMethod);
+    const payLabel = PAYMENT_LABELS[payKeyNorm] || paymentMethod || "No especificada";
     const anot = anotacion.trim() || "Sin anotaciones";
 
     const isPickup = deliveryType === "pickup";
@@ -277,6 +266,11 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       ? `*Entrega:* Retira en el local\n`
       : `*Entrega:* Envío a domicilio\n*Dirección:* ${addr}\n`;
 
+    const feeLine =
+      feePct !== 0
+        ? `*${feePct > 0 ? "Recargo" : "Descuento"} (${money(feePct)}%):* $${money(Math.abs(feeAmount))}\n`
+        : "";
+
     return (
       `*Pedido*\n` +
       `*Nombre:* ${name}\n` +
@@ -284,7 +278,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
       entregaLine +
       `\n*Detalle:*\n${lines.join("\n")}\n\n` +
       `*Subtotal:* $${money(subtotal)}\n` +
-      (feePct ? `*Recargo (${feePct}%):* $${money(feeAmount)}\n` : "") +
+      feeLine +
       `*TOTAL:* $${money(totalFinal)}\n` +
       `*Forma de pago:* ${payLabel}\n` +
       `*Anotaciones:* ${anot}\n\n` +
@@ -310,7 +304,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const canSend =
     cart.length > 0 &&
     (deliveryType === "pickup" || address.trim().length > 0) &&
-    (!needsPay || Boolean(String(paymentMethod || "").trim()));
+    (!needsPay || Boolean(String(paymentMethod).trim()));
 
   return (
     <div className="min-h-screen" style={bgStyle}>
@@ -411,9 +405,9 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                 className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
               >
                 <button
-                  type="button"
                   onClick={() => setOpenCategory(isOpen ? null : category)}
                   className="w-full px-5 py-4 flex items-center justify-between text-left"
+                  type="button"
                 >
                   <div>
                     <h2 className="font-bold text-gray-900">{category}</h2>
@@ -430,88 +424,84 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
 
                 {isOpen && (
                   <div className="px-5 pb-4 space-y-3">
-                    {items.map((item) => {
-                      const isAvailable = item?.available !== false;
+                    {items.map((item) => (
+                      <div
+                        key={item._id}
+                        className={`flex items-start justify-between gap-3 border-t pt-3 ${
+                          !item.available ? "opacity-45" : ""
+                        }`}
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-gray-200">
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <i className="fas fa-image text-gray-400" />
+                                </div>
+                              )}
+                            </div>
 
-                      return (
-                        <div
-                          key={item._id}
-                          className={`flex items-start justify-between gap-3 border-t pt-3 ${
-                            !isAvailable ? "opacity-45" : ""
-                          }`}
-                        >
-                          <div className="flex items-start gap-3 min-w-0">
-                            <div className="relative flex-shrink-0">
-                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-gray-200">
-                                {item.image ? (
-                                  <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <i className="fas fa-image text-gray-400" />
-                                  </div>
-                                )}
+                            {!item.available && (
+                              <div className="absolute inset-0 rounded-xl bg-black/55 flex items-center justify-center">
+                                <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                  No disp.
+                                </span>
                               </div>
-
-                              {!isAvailable && (
-                                <div className="absolute inset-0 rounded-xl bg-black/55 flex items-center justify-center">
-                                  <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">
-                                    No disp.
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="min-w-0">
-                              <p className="font-medium text-gray-900 whitespace-normal break-words">{item.name}</p>
-
-                              {item.description && (
-                                <p className="text-sm text-gray-500 whitespace-normal break-words">{item.description}</p>
-                              )}
-
-                              {item.tags && item.tags.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                  {item.tags.slice(0, 3).map((tag, idx) => (
-                                    <span
-                                      key={idx}
-                                      className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                            )}
                           </div>
 
-                          <div className="flex flex-col items-end gap-2">
-                            <span className="font-bold whitespace-nowrap" style={{ color: primaryColor }}>
-                              ${typeof item.price === "number" ? item.price.toFixed(2) : item.price}
-                            </span>
+                          <div className="min-w-0">
+                            <p className="font-medium text-gray-900 whitespace-normal break-words">{item.name}</p>
 
-                            {isDelivery && (
-                              <button
-                                type="button"
-                                disabled={!isAvailable}
-                                onClick={() => addToCart(item)}
-                                className="px-3 py-1 rounded-lg text-xs font-semibold border"
-                                style={{
-                                  borderColor: primaryColor,
-                                  color: primaryColor,
-                                  opacity: isAvailable ? 1 : 0.4,
-                                }}
-                              >
-                                Agregar
-                              </button>
+                            {item.description && (
+                              <p className="text-sm text-gray-500 whitespace-normal break-words">{item.description}</p>
+                            )}
+
+                            {item.tags && item.tags.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {item.tags.slice(0, 3).map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
                             )}
                           </div>
                         </div>
-                      );
-                    })}
+
+                        <div className="flex flex-col items-end gap-2">
+                          <span className="font-bold whitespace-nowrap" style={{ color: primaryColor }}>
+                            ${typeof item.price === "number" ? item.price.toFixed(2) : money(item.price)}
+                          </span>
+
+                          {isDelivery && (
+                            <button
+                              disabled={!item.available}
+                              onClick={() => addToCart(item)}
+                              className="px-3 py-1 rounded-lg text-xs font-semibold border"
+                              style={{
+                                borderColor: primaryColor,
+                                color: primaryColor,
+                                opacity: item.available ? 1 : 0.4,
+                              }}
+                              type="button"
+                            >
+                              Agregar
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -534,10 +524,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
               className="w-full rounded-2xl shadow-lg border bg-white/95 backdrop-blur px-4 py-3 flex items-center justify-between"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${primaryColor}22` }}
-                >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${primaryColor}22` }}>
                   <i className="fas fa-shopping-cart" style={{ color: primaryColor }} />
                 </div>
 
@@ -568,19 +555,20 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                 <div className="p-4 flex items-center justify-between border-b">
                   <div>
                     <h3 className="font-bold text-gray-900">Tu pedido</h3>
-
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500">
                       Subtotal: <span className="font-semibold">${money(subtotal)}</span>
-                      {feePct ? (
+                      {feePct !== 0 && (
                         <>
                           {" "}
-                          · Recargo {feePct}%: <span className="font-semibold">${money(feeAmount)}</span>
+                          • {feePct > 0 ? "Recargo" : "Descuento"}:{" "}
+                          <span className="font-semibold">${money(Math.abs(feeAmount))}</span>
                         </>
-                      ) : null}
-                    </p>
-
-                    <p className="text-xs text-gray-500">
-                      Total: <span className="font-semibold" style={{ color: primaryColor }}>${money(totalFinal)}</span>
+                      )}
+                      {" "}
+                      • Total:{" "}
+                      <span className="font-semibold" style={{ color: primaryColor }}>
+                        ${money(totalFinal)}
+                      </span>
                     </p>
                   </div>
 
@@ -623,12 +611,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                   )}
 
                   <div className="mt-3 flex flex-col gap-2">
-                    <input
-                      value={orderName}
-                      onChange={(e) => setOrderName(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                      placeholder="Tu nombre"
-                    />
+                    <input value={orderName} onChange={(e) => setOrderName(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Tu nombre" />
 
                     <div className="grid grid-cols-2 gap-2">
                       <button
@@ -659,12 +642,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                     </div>
 
                     {deliveryType === "delivery" && (
-                      <input
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                        placeholder="Dirección de entrega"
-                      />
+                      <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Dirección de entrega" />
                     )}
 
                     {paymentOptionsLabeled.length > 0 ? (
@@ -674,7 +652,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                         className="w-full border rounded-lg px-3 py-2 text-sm bg-white"
                       >
                         {paymentOptionsLabeled.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
+                          <option key={opt.key} value={opt.key}>
                             {opt.label}
                           </option>
                         ))}
@@ -688,12 +666,13 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                       />
                     )}
 
-                    <input
-                      value={anotacion}
-                      onChange={(e) => setAnotacion(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                      placeholder="Aclaraciones de tu pedido"
-                    />
+                    {feePct !== 0 && (
+                      <p className="text-xs text-gray-500">
+                        {feePct > 0 ? "Recargo" : "Descuento"} {money(Math.abs(feePct))}%: ${money(Math.abs(feeAmount))}
+                      </p>
+                    )}
+
+                    <input value={anotacion} onChange={(e) => setAnotacion(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Aclaraciones de tu pedido" />
 
                     <button
                       className="w-full px-4 py-2 rounded-lg font-semibold text-sm text-white disabled:opacity-50"
@@ -706,15 +685,6 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
                     </button>
 
                     <p className="text-[11px] text-gray-500">* Se enviará un mensaje con el detalle del pedido.</p>
-
-                    {/* DEBUG opcional (sacalo después) */}
-                    {/* 
-                    <pre className="text-[10px] bg-gray-50 p-2 rounded">
-                      pct={feePct} subtotal={subtotal} totalFinal={totalFinal}
-                      {"\n"}percents={JSON.stringify(paymentPercentsFromAdmin, null, 2)}
-                      {"\n"}method="{paymentMethod}" norm="{normKey(paymentMethod)}"
-                    </pre>
-                    */}
                   </div>
                 </div>
               </div>
