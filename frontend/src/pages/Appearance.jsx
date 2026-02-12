@@ -62,18 +62,19 @@ const Appearance = () => {
         const menu = await getAdminMenu();
         const t = menu?.theme || {};
 
-       const profile = await getAdminProfile();
-console.log("PROFILE >>>", profile);
-const pm =
-  profile?.paymentMethods ??
-  profile?.admin?.paymentMethods ??
-  profile?.data?.paymentMethods ??
-  profile?.data?.admin?.paymentMethods ??
-  [];
-  
+      const profile = await getAdminProfile();
+      console.log("PROFILE >>>", profile);
 
-setPaymentMethods(Array.isArray(profile?.paymentMethods) ? profile.paymentMethods : []);
+      const pm =
+        profile?.paymentMethods ??
+        profile?.admin?.paymentMethods ??
+        profile?.data?.paymentMethods ??
+        profile?.data?.admin?.paymentMethods ??
+        [];
 
+      const pmArr = Array.isArray(pm) ? pm : [];
+      setPaymentMethods(pmArr.map((x) => String(x).trim().toLowerCase()).filter(Boolean));
+ 
 // puede venir como objeto o como Map serializado
         const rawPercents = profile?.paymentMethodPercents || {};
        setPaymentPercents(rawPercents && typeof rawPercents === 'object' ? rawPercents : {});
