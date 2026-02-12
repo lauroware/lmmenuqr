@@ -126,7 +126,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, [isDelivery, itemsCount, total]);
+  }, [isDelivery, itemsCount, totalFinal]);
 
   // Bloquear scroll del fondo cuando el sheet está abierto
   useEffect(() => {
