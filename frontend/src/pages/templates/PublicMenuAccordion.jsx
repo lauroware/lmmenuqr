@@ -692,8 +692,14 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
           </div>
         </>
       )}
+      console.log("paymentMethods:", data?.paymentMethods);
+console.log("paymentMethodPercents:", data?.paymentMethodPercents);
+console.log("paymentMethod seleccionado:", paymentMethod);
+
     </div>
   );
 };
+
+
 
 export default PublicMenuAccordion;
