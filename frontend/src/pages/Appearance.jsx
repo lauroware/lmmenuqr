@@ -77,8 +77,16 @@ const Appearance = () => {
  
 // puede venir como objeto o como Map serializado
         const rawPercents = profile?.paymentMethodPercents || {};
-       setPaymentPercents(rawPercents && typeof rawPercents === 'object' ? rawPercents : {});
-
+     const normalized = (rawPercents && typeof rawPercents === 'object') ? rawPercents : {};
+      // normalizar números
+      const next = {};
+      for (const [k, v] of Object.entries(normalized)) {
+        const key = String(k || '').trim().toLowerCase();
+        const num = Number(v);
+        if (!key) continue;
+        next[key] = Number.isFinite(num) ? num : 0;
+      }
+      setPaymentPercents(next);
 
         // robusto: si el backend no trae layout, mantenemos el default
         setTheme((prev) => ({
