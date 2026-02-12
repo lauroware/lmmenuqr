@@ -103,32 +103,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
     [cart]
   );
 
-
-  // ---------------------------
-  // Si elige retiro, limpiamos dirección
-  // ---------------------------
-  useEffect(() => {
-    if (!isDelivery) return;
-    if (deliveryType === "pickup") setAddress("");
-  }, [isDelivery, deliveryType]);
-
-  // ---------------------------
-  // Padding inferior dinámico para FAB
-  // ---------------------------
-  useEffect(() => {
-    if (!isDelivery) return;
-
-    const update = () => {
-      const h = fabRef.current?.offsetHeight || 0;
-      setBottomPad(h + 16);
-    };
-
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [isDelivery, itemsCount, totalFinal]);
-
-
+  
 // ============================
 // SUBTOTAL
 // ============================
@@ -162,6 +137,32 @@ const totalFinal = useMemo(() => {
   if (!feePct) return subtotal;
   return subtotal * (1 + feePct / 100);
 }, [subtotal, feePct]);
+
+  // ---------------------------
+  // Si elige retiro, limpiamos dirección
+  // ---------------------------
+  useEffect(() => {
+    if (!isDelivery) return;
+    if (deliveryType === "pickup") setAddress("");
+  }, [isDelivery, deliveryType]);
+
+
+  
+  // ---------------------------
+  // Padding inferior dinámico para FAB
+  // ---------------------------
+  useEffect(() => {
+    if (!isDelivery) return;
+
+    const update = () => {
+      const h = fabRef.current?.offsetHeight || 0;
+      setBottomPad(h + 16);
+    };
+
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [isDelivery, itemsCount, totalFinal]);
 
   // Bloquear scroll del fondo cuando el sheet está abierto
   useEffect(() => {
@@ -270,6 +271,39 @@ useEffect(() => {
 
 
 
+// ============================
+// SUBTOTAL
+// ============================
+const subtotal = useMemo(() => {
+  return cart.reduce((sum, x) => {
+    const p = typeof x.price === "number" ? x.price : Number(x.price);
+    return sum + (Number.isFinite(p) ? p : 0) * (x.qty || 0);
+  }, 0);
+}, [cart]);
+
+// ============================
+// % DE RECARGO
+// ============================
+const feePct = useMemo(() => {
+  const key = String(paymentMethod || "")
+    .trim()
+    .toLowerCase();
+
+  if (!key) return 0;
+
+  const raw = paymentPercentsFromAdmin?.[key];
+  const num = Number(raw);
+
+  return Number.isFinite(num) ? num : 0;
+}, [paymentMethod, paymentPercentsFromAdmin]);
+
+// ============================
+// TOTAL FINAL
+// ============================
+const totalFinal = useMemo(() => {
+  if (!feePct) return subtotal;
+  return subtotal * (1 + feePct / 100);
+}, [subtotal, feePct]);
 
 
   // ---------------------------
