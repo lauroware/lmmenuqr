@@ -22,6 +22,8 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const [anotacion, setAnotacion] = useState("");
   const [orderName, setOrderName] = useState("");
   const [cartOpen, setCartOpen] = useState(false);
+  const [linksOpen, setLinksOpen] = useState(false);
+
 
   // Padding dinámico para que el FAB no tape el contenido
   const fabRef = useRef(null);
@@ -343,49 +345,63 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
         )}
 
         {/* LINKS DEL COMERCIO (solo delivery) */}
-        {isDelivery && (mapsUrl || igUrl) && (
-          <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm p-4">
-            <div className="flex flex-wrap gap-2 justify-center">
-              {mapsUrl && (
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-2 rounded-lg border text-sm font-semibold"
-                  style={{ borderColor: primaryColor, color: primaryColor }}
-                >
-                  📍 Cómo llegar
-                </a>
-              )}
+ {isDelivery && (mapsUrl || igUrl || waUrl) && (
+  <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    
+    <button
+      onClick={() => setLinksOpen((prev) => !prev)}
+      className="w-full px-4 py-3 flex items-center justify-between text-sm font-semibold"
+      style={{ color: primaryColor }}
+    >
+      Información del comercio
+      <i
+        className={`fas fa-chevron-down transition-transform ${
+          linksOpen ? "rotate-180" : ""
+        }`}
+      />
+    </button>
 
-                  {waUrl && (
-  <a
-    href={waUrl}
-    target="_blank"
-    rel="noreferrer"
-    className="px-3 py-2 rounded-lg border text-sm font-semibold"
-    style={{ borderColor: primaryColor, color: primaryColor }}
-  >
-    💬 WhatsApp
-  </a>
-)}
-
-              {igUrl && (
-                <a
-                  href={igUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-2 rounded-lg border text-sm font-semibold"
-                  style={{ borderColor: primaryColor, color: primaryColor }}
-                >
-                  📷 Instagram @{igUser}
-                </a>
-              )}
-            </div>
-          </div>
-
-          
+    {linksOpen && (
+      <div className="px-4 pb-4 flex flex-wrap gap-2 justify-center border-t pt-3">
+        {mapsUrl && (
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-2 rounded-lg border text-sm font-semibold"
+            style={{ borderColor: primaryColor, color: primaryColor }}
+          >
+            📍 Cómo llegar
+          </a>
         )}
+
+        {waUrl && (
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-2 rounded-lg border text-sm font-semibold"
+            style={{ borderColor: primaryColor, color: primaryColor }}
+          >
+            💬 WhatsApp
+          </a>
+        )}
+
+        {igUrl && (
+          <a
+            href={igUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-2 rounded-lg border text-sm font-semibold"
+            style={{ borderColor: primaryColor, color: primaryColor }}
+          >
+            📷 Instagram @{igUser}
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+)}
 
     
 
