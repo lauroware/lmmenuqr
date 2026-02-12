@@ -10,6 +10,8 @@ const PAYMENT_OPTIONS = [
   { key: 'transferencia', label: 'Transferencia' },
   { key: 'mercadopago', label: 'Mercado Pago' },
   { key: 'tarjeta', label: 'Tarjeta' },
+  { key: 'modo', label: 'Modo' },
+  { key: 'otro', label: 'Otro' },
 ];
 
 
@@ -20,6 +22,9 @@ const Appearance = () => {
    // ✅ medios de pago (DELIVERY CONFIG)
   const [paymentMethods, setPaymentMethods] = useState([]); // strings
   const [paymentOther, setPaymentOther] = useState('');
+  // % por medio de pago (ej: { mercadopago: 10 })
+  const [paymentPercents, setPaymentPercents] = useState({});
+  const [paymentOtherPercent, setPaymentOtherPercent] = useState('');
 
   // theme persistido en backend
   const [theme, setTheme] = useState({
@@ -69,6 +74,10 @@ const pm =
 setPaymentMethods(Array.isArray(pm) ? pm : []);
 
 setPaymentMethods(Array.isArray(profile?.paymentMethods) ? profile.paymentMethods : []);
+
+// puede venir como objeto o como Map serializado
+        const rawPercents = profile?.paymentMethodPercents || {};
+       setPaymentPercents(rawPercents && typeof rawPercents === 'object' ? rawPercents : {});
 
 
         // robusto: si el backend no trae layout, mantenemos el default
@@ -226,12 +235,31 @@ setPaymentMethods(Array.isArray(profile?.paymentMethods) ? profile.paymentMethod
 // opcional: evitar duplicados (por si “Otro” coincide)
 const unique = Array.from(new Set(cleaned.map((x) => x.toLowerCase().trim())));
 
-await updateAdminProfile({ paymentMethods: unique });
+
+
+// armamos mapa de % solo para los métodos seleccionados
+const nextPercents = {};
+for (const key of unique) {
+  const v = paymentPercents?.[key];
+  const num = Number(v);
+  nextPercents[key] = Number.isFinite(num) ? num : 0;
+}
+
+// si “Otro” está cargado, también guarda su %
+const otherKey = paymentOther.trim().toLowerCase();
+if (otherKey) {
+  const num = Number(paymentOtherPercent);
+  nextPercents[otherKey] = Number.isFinite(num) ? num : 0;
+}
+
+await updateAdminProfile({ paymentMethods: unique, paymentMethodPercents: nextPercents });
+ 
 
 // refresco local
 setPaymentMethods(unique);
 setPaymentOther("");
-
+setPaymentOtherPercent("");
+setPaymentPercents(nextPercents);
 
       alert('Apariencia guardada ✅');
     } catch (e) {
@@ -610,19 +638,49 @@ setPaymentOther("");
     {PAYMENT_OPTIONS.map((opt) => {
       const checked = paymentMethods.includes(opt.key);
       return (
-        <label key={opt.key} className="flex items-center gap-3 border rounded-lg px-3 py-2">
-          <input
-            type="checkbox"
-            checked={checked}
-            onChange={(e) => {
-              const on = e.target.checked;
-              setPaymentMethods((prev) =>
-                on ? [...prev, opt.key] : prev.filter((x) => x !== opt.key)
-              );
-            }}
-          />
-          <span className="text-sm text-gray-800">{opt.label}</span>
-        </label>
+       
+
+<div key={opt.key} className="border rounded-lg px-3 py-2">
+          <label className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={(e) => {
+                const on = e.target.checked;
+                setPaymentMethods((prev) =>
+                  on ? [...prev, opt.key] : prev.filter((x) => x !== opt.key)
+                );
+
+                // si se desmarca, lo limpiamos del mapa (opcional)
+                if (!on) {
+                  setPaymentPercents((prev) => {
+                    const next = { ...prev };
+                    delete next[opt.key];
+                    return next;
+                  });
+                }
+              }}
+            />
+            <span className="text-sm text-gray-800">{opt.label}</span>
+          </label>
+
+          {checked && (
+            <div className="mt-2">
+              <label className="block text-xs text-gray-600 mb-1">Recargo % (opcional)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={paymentPercents?.[opt.key] ?? 0}
+                onChange={(e) =>
+                  setPaymentPercents((prev) => ({ ...prev, [opt.key]: e.target.value }))
+                }
+                className="w-full px-3 py-2 border rounded-lg border-gray-300 text-sm"
+                placeholder="0"
+              />
+            </div>
+          )}
+        </div>
+
       );
     })}
   </div>
@@ -635,6 +693,19 @@ setPaymentOther("");
       className="w-full px-4 py-3 border rounded-lg border-gray-300"
       placeholder="Ej: Débito, MODO, QR, etc."
     />
+
+ <div className="mt-2">
+      <label className="block text-xs text-gray-600 mb-1">Recargo % para “Otro” (opcional)</label>
+      <input
+        type="number"
+        step="0.1"
+        value={paymentOtherPercent}
+        onChange={(e) => setPaymentOtherPercent(e.target.value)}
+        className="w-full px-4 py-3 border rounded-lg border-gray-300 text-sm"
+        placeholder="0"
+      />
+    </div>
+
     <p className="text-xs text-gray-500 mt-2">
       Tip: si lo completás, lo vamos a guardar como un método más.
     </p>

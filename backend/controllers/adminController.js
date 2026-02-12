@@ -181,6 +181,7 @@ const registerAdmin = asyncHandler(async (req, res) => {
       whatsapp: admin.whatsapp,
       address: admin.address,
       instagram: admin.instagram,
+      paymentMethodPercents: admin.paymentMethodPercents,
       token: generateToken(admin._id),
     });
   } else {
@@ -225,6 +226,19 @@ if (Array.isArray(req.body.paymentMethods)) {
     .filter(Boolean);
 }
 
+// 🆕 recargos por método (porcentaje)
+if (req.body.paymentMethodPercents && typeof req.body.paymentMethodPercents === 'object') {
+  const next = {};
+  for (const [k, v] of Object.entries(req.body.paymentMethodPercents)) {
+    const key = String(k || '').trim().toLowerCase();
+    const num = Number(v);
+    if (!key) continue;
+    if (!Number.isFinite(num)) continue;
+    next[key] = num;
+  }
+  admin.paymentMethodPercents = next;
+}
+
 admin.paymentMethods = Array.isArray(req.body.paymentMethods)
   ? req.body.paymentMethods
   : admin.paymentMethods;
@@ -246,6 +260,7 @@ admin.paymentMethods = Array.isArray(req.body.paymentMethods)
 address: updatedAdmin.address,
 instagram: updatedAdmin.instagram,
 paymentMethods: admin.paymentMethods,
+paymentMethodPercents: updatedAdmin.paymentMethodPercents,
 
 
       token: generateToken(updatedAdmin._id),

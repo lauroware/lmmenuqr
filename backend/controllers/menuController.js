@@ -243,9 +243,9 @@ const getPublicMenu = asyncHandler(async (req, res) => {
 
   const [menuItems, admin] = await Promise.all([
   MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 }),
-  Admin.findById(menu.admin)
-    .select('whatsapp address instagram phone paymentMethods')
-    .lean(),
+ 
+    Admin.findById(menu.admin)
+     .select('whatsapp address instagram phone paymentMethods paymentMethodPercents')      .lean(),
 ]);
 
   const whatsapp = String(admin?.whatsapp || admin?.phone || '').trim();

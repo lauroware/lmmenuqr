@@ -17,8 +17,16 @@ const adminSchema = mongoose.Schema(
     // 🆕 Medios de pago configurables
     paymentMethods: {
       type: [String],
-      default: [], // Ej: ["mercadopago", "transferencia", "tarjeta", "efectivo", "modo", "bitcoin"]
+      default: [], // Ej: ["mercadopago", "transferencia", "tarjeta", "efectivo", "modo", "otro"]
     },
+
+     // 🆕 Recargo/descuento por medio de pago (porcentaje)
+   // Ej: { mercadopago: 10, tarjeta: 5, efectivo: 0 }
+   paymentMethodPercents: {
+      type: Map,
+      of: Number,
+      default: {},
+  },
 
     // 🔐 Reset password
     resetPasswordToken: { type: String },

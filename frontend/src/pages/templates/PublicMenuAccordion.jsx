@@ -185,12 +185,30 @@ const paymentOptionsFromAdmin = useMemo(() => {
     .filter(Boolean);
 }, [data]);
 
+
+
+// % por medio de pago (desde admin)
+const paymentPercentsFromAdmin = useMemo(() => {
+  const raw =
+    data?.paymentMethodPercents ||
+    data?.admin?.paymentMethodPercents ||
+    data?.menu?.paymentMethodPercents ||
+    {};
+
+  if (!raw) return {};
+  if (typeof raw !== 'object') return {};
+  return raw;
+}, [data]);
+
+
 // labels “lindos” para los keys estándar
 const PAYMENT_LABELS = {
   efectivo: 'Efectivo',
   transferencia: 'Transferencia',
   mercadopago: 'Mercado Pago',
   tarjeta: 'Tarjeta',
+  modo: 'Modo',
+  otro: 'Otro',
 };
 
 const paymentOptionsLabeled = useMemo(() => {
@@ -207,6 +225,24 @@ useEffect(() => {
   if (paymentOptionsFromAdmin.length === 0) return;
   setPaymentMethod(paymentOptionsFromAdmin[0]);
 }, [isDelivery, paymentMethod, paymentOptionsFromAdmin]);
+
+
+
+// recargo % y total final
+const feePct = useMemo(() => {
+  const key = String(paymentMethod || '').trim();
+  if (!key) return 0;
+  const raw = paymentPercentsFromAdmin?.[key];
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : 0;
+}, [paymentMethod, paymentPercentsFromAdmin]);
+
+const totalFinal = useMemo(() => {
+  const pct = Number(feePct);
+  if (!Number.isFinite(pct) || pct === 0) return total;
+  return total * (1 + pct / 100);
+}, [total, feePct]);
+
 
   // ---------------------------
   // Armado del texto + WhatsApp
@@ -239,7 +275,9 @@ const pay =
       `*Comercio:* ${restaurantName}\n\n` +
       entregaLine +
       `\n*Detalle:*\n${lines.join("\n")}\n\n` +
-      `*TOTAL:* $${money(total)}\n` +
+      `*Subtotal:* $${money(total)}\n` 
+      (feePct > 0 ? `*Recargo (${feePct}%):* $${money(totalFinal - total)}\n` : '') +
+      `*TOTAL:* $${money(totalFinal)}\n` +
       `*Forma de pago:* ${pay}\n` +
       `*Anotaciones:* ${anot}\n\n` +
       `Verificá los datos de tu pedido.\n` +
@@ -263,7 +301,12 @@ const pay =
     );
   };
 
-  const canSend = cart.length > 0 && (deliveryType === "pickup" || address.trim().length > 0);
+  
+const needsPay = paymentOptionsFromAdmin.length > 0;
+  const canSend =
+    cart.length > 0 &&
+    (deliveryType === "pickup" || address.trim().length > 0) &&
+    (!needsPay || Boolean(paymentMethod.trim()));
 
   return (
     <div className="min-h-screen" style={bgStyle}>
@@ -510,7 +553,7 @@ const pay =
               </div>
 
               <span className="font-bold whitespace-nowrap" style={{ color: primaryColor }}>
-                ${money(total)}
+                ${money(totalFinal)}
               </span>
             </button>
           </div>
@@ -535,7 +578,7 @@ const pay =
                   <div>
                     <h3 className="font-bold text-gray-900">Tu pedido</h3>
                     <p className="text-xs text-gray-500">
-                      Total: <span className="font-semibold" style={{ color: primaryColor }}>${money(total)}</span>
+                      Total: <span className="font-semibold" style={{ color: primaryColor }}>${money(totalFinal)}</span>
                     </p>
                   </div>
 
