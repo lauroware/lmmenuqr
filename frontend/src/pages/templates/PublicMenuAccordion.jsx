@@ -275,7 +275,7 @@ const pay =
       `*Comercio:* ${restaurantName}\n\n` +
       entregaLine +
       `\n*Detalle:*\n${lines.join("\n")}\n\n` +
-      `*Subtotal:* $${money(total)}\n` 
+      `*Subtotal:* $${money(total)}\n`  +
       (feePct > 0 ? `*Recargo (${feePct}%):* $${money(totalFinal - total)}\n` : '') +
       `*TOTAL:* $${money(totalFinal)}\n` +
       `*Forma de pago:* ${pay}\n` +
