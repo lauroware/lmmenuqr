@@ -262,9 +262,13 @@ const getPublicMenu = asyncHandler(async (req, res) => {
   address: String(admin?.address || '').trim(),
   instagram: String(admin?.instagram || '').trim().replace(/^@/, ''),
 
-  // ✅ acá está la clave
   paymentMethods: Array.isArray(admin?.paymentMethods) ? admin.paymentMethods : [],
+  paymentMethodPercents:
+    admin?.paymentMethodPercents && typeof admin.paymentMethodPercents === 'object'
+      ? admin.paymentMethodPercents
+      : {},
 });
+
 });
 
 
