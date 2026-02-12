@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const money = (n) => {
   const num = typeof n === "number" ? n : Number(n);
@@ -10,7 +10,7 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const isDelivery = mode === "delivery";
 
   const theme = data?.theme || {};
-  const primaryColor = theme.primaryColor || '#2563eb';
+  const primaryColor = theme.primaryColor || "#2563eb";
 
   const [openCategory, setOpenCategory] = useState(null);
 
@@ -24,27 +24,26 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   const [cartOpen, setCartOpen] = useState(false);
   const [linksOpen, setLinksOpen] = useState(false);
 
-
   // Padding dinámico para que el FAB no tape el contenido
   const fabRef = useRef(null);
   const [bottomPad, setBottomPad] = useState(0);
 
   const bgStyle =
-    theme.backgroundType === 'image' && theme.backgroundValue
+    theme.backgroundType === "image" && theme.backgroundValue
       ? {
           backgroundImage: `url(${theme.backgroundValue})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
         }
-      : { backgroundColor: theme.backgroundValue || '#f3f4f6' };
+      : { backgroundColor: theme.backgroundValue || "#f3f4f6" };
 
-  const restaurantName = data?.restaurantName || 'Menú';
+  const restaurantName = data?.restaurantName || "Menú";
   const menuItems = Array.isArray(data?.menuItems) ? data.menuItems : [];
 
   /* categorías únicas */
   const categories = useMemo(
-    () => [...new Set(menuItems.map(i => i.category).filter(Boolean))],
+    () => [...new Set(menuItems.map((i) => i.category).filter(Boolean))],
     [menuItems]
   );
 
@@ -60,83 +59,139 @@ const PublicMenuAccordion = ({ data, mode = "salon" }) => {
   }, [menuItems]);
 
   // ---------------------------
+  // Links del comercio (solo delivery)
+  // ---------------------------
+  const adminAddress = (data?.address || "").trim();
+  const mapsUrl = adminAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        adminAddress
+      )}`
+    : null;
+
+  const igUser = String(data?.instagram || "")
+    .trim()
+    .replace(/^@/, "")
+    .replace(/\s+/g, "");
+  const igUrl = igUser ? `https://instagram.com/${igUser}` : null;
+
+  const waNumber = String(data?.whatsapp || "").trim().replace(/\D/g, "");
+  const waUrl = waNumber ? `https://wa.me/${waNumber}` : null;
+
+  // ---------------------------
+  // Métodos de pago del comercio (desde el admin)
+  // ---------------------------
+  const paymentOptionsFromAdmin = useMemo(() => {
+    const raw =
+      data?.paymentMethods ||
+      data?.admin?.paymentMethods ||
+      data?.menu?.paymentMethods ||
+      [];
+
+    const arr = Array.isArray(raw) ? raw : [];
+    return arr.map((x) => String(x || "").trim()).filter(Boolean);
+  }, [data]);
+
+  const paymentPercentsFromAdmin = useMemo(() => {
+    const raw =
+      data?.paymentMethodPercents ||
+      data?.admin?.paymentMethodPercents ||
+      data?.menu?.paymentMethodPercents ||
+      {};
+
+    if (!raw || typeof raw !== "object") return {};
+
+    const normalized = {};
+    for (const [k, v] of Object.entries(raw)) {
+      const key = String(k || "").trim().toLowerCase();
+      const num = Number(v);
+      if (!key) continue;
+      normalized[key] = Number.isFinite(num) ? num : 0;
+    }
+    return normalized;
+  }, [data]);
+
+  const PAYMENT_LABELS = {
+    efectivo: "Efectivo",
+    transferencia: "Transferencia",
+    mercadopago: "Mercado Pago",
+    tarjeta: "Tarjeta",
+    modo: "Modo",
+    otro: "Otro",
+  };
+
+  const paymentOptionsLabeled = useMemo(() => {
+    return paymentOptionsFromAdmin.map((key) => ({
+      key,
+      label: PAYMENT_LABELS[key] || key,
+    }));
+  }, [paymentOptionsFromAdmin]);
+
+  // Si el comercio tiene opciones y el usuario todavía no eligió, seteamos la primera
+  useEffect(() => {
+    if (!isDelivery) return;
+    if (paymentMethod) return;
+    if (paymentOptionsFromAdmin.length === 0) return;
+    setPaymentMethod(paymentOptionsFromAdmin[0]);
+  }, [isDelivery, paymentMethod, paymentOptionsFromAdmin]);
+
+  // ---------------------------
   // Carrito: helpers
   // ---------------------------
   const addToCart = (item) => {
     if (!item?.available) return;
 
-    setCart(prev => {
-      const found = prev.find(x => x._id === item._id);
+    setCart((prev) => {
+      const found = prev.find((x) => x._id === item._id);
       if (found) {
-        return prev.map(x =>
+        return prev.map((x) =>
           x._id === item._id ? { ...x, qty: (x.qty || 0) + 1 } : x
         );
       }
-      return [
-        ...prev,
-        { _id: item._id, name: item.name, price: item.price, qty: 1 }
-      ];
+      return [...prev, { _id: item._id, name: item.name, price: item.price, qty: 1 }];
     });
 
-    // UX: abrimos el carrito al agregar
     if (!cartOpen) setCartOpen(true);
   };
 
   const decQty = (id) => {
-    setCart(prev =>
+    setCart((prev) =>
       prev
-        .map(x => (x._id === id ? { ...x, qty: (x.qty || 0) - 1 } : x))
-        .filter(x => (x.qty || 0) > 0)
+        .map((x) => (x._id === id ? { ...x, qty: (x.qty || 0) - 1 } : x))
+        .filter((x) => (x.qty || 0) > 0)
     );
   };
 
   const incQty = (id) => {
-    setCart(prev =>
-      prev.map(x => (x._id === id ? { ...x, qty: (x.qty || 0) + 1 } : x))
-    );
+    setCart((prev) => prev.map((x) => (x._id === id ? { ...x, qty: (x.qty || 0) + 1 } : x)));
   };
 
   const clearCart = () => setCart([]);
 
-  const itemsCount = useMemo(
-    () => cart.reduce((s, x) => s + (x.qty || 0), 0),
-    [cart]
-  );
+  const itemsCount = useMemo(() => cart.reduce((s, x) => s + (x.qty || 0), 0), [cart]);
 
-  
-// ============================
-// SUBTOTAL
-// ============================
-const subtotal = useMemo(() => {
-  return cart.reduce((sum, x) => {
-    const p = typeof x.price === "number" ? x.price : Number(x.price);
-    return sum + (Number.isFinite(p) ? p : 0) * (x.qty || 0);
-  }, 0);
-}, [cart]);
+  // ---------------------------
+  // Subtotal / recargo / total final (¡DESPUÉS de paymentPercentsFromAdmin!)
+  // ---------------------------
+  const subtotal = useMemo(() => {
+    return cart.reduce((sum, x) => {
+      const p = typeof x.price === "number" ? x.price : Number(x.price);
+      return sum + (Number.isFinite(p) ? p : 0) * (x.qty || 0);
+    }, 0);
+  }, [cart]);
 
-// ============================
-// % DE RECARGO
-// ============================
-const feePct = useMemo(() => {
-  const key = String(paymentMethod || "")
-    .trim()
-    .toLowerCase();
+  const feePct = useMemo(() => {
+    const key = String(paymentMethod || "").trim().toLowerCase();
+    if (!key) return 0;
 
-  if (!key) return 0;
+    const raw = paymentPercentsFromAdmin?.[key];
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : 0;
+  }, [paymentMethod, paymentPercentsFromAdmin]);
 
-  const raw = paymentPercentsFromAdmin?.[key];
-  const num = Number(raw);
-
-  return Number.isFinite(num) ? num : 0;
-}, [paymentMethod, paymentPercentsFromAdmin]);
-
-// ============================
-// TOTAL FINAL
-// ============================
-const totalFinal = useMemo(() => {
-  if (!feePct) return subtotal;
-  return subtotal * (1 + feePct / 100);
-}, [subtotal, feePct]);
+  const totalFinal = useMemo(() => {
+    if (!feePct) return subtotal;
+    return subtotal * (1 + feePct / 100);
+  }, [subtotal, feePct]);
 
   // ---------------------------
   // Si elige retiro, limpiamos dirección
@@ -146,8 +201,6 @@ const totalFinal = useMemo(() => {
     if (deliveryType === "pickup") setAddress("");
   }, [isDelivery, deliveryType]);
 
-
-  
   // ---------------------------
   // Padding inferior dinámico para FAB
   // ---------------------------
@@ -177,136 +230,6 @@ const totalFinal = useMemo(() => {
   }, [isDelivery, cartOpen]);
 
   // ---------------------------
-  // Links del comercio (solo delivery)
-  // ---------------------------
-  const adminAddress = (data?.address || "").trim();
-
-  const mapsUrl = adminAddress
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adminAddress)}`
-    : null;
-
-  const igUser = String(data?.instagram || "")
-    .trim()
-    .replace(/^@/, "")
-    .replace(/\s+/g, "");
-  const igUrl = igUser ? `https://instagram.com/${igUser}` : null;
-
-  const waNumber = String(data?.whatsapp || "")
-  .trim()
-  .replace(/\D/g, ""); // solo números
-
-const waUrl = waNumber
-  ? `https://wa.me/${waNumber}`
-  : null;
-
-// ---------------------------
-// Métodos de pago del comercio (desde el admin)
-// ---------------------------
-const paymentOptionsFromAdmin = useMemo(() => {
-  // puede venir en distintas keys según cómo lo devuelvas
-  const raw =
-    data?.paymentMethods ||
-    data?.admin?.paymentMethods ||
-    data?.menu?.paymentMethods ||
-    [];
-
-  // normalizar a array de strings
-  const arr = Array.isArray(raw) ? raw : [];
-  return arr
-    .map((x) => String(x || '').trim())
-    .filter(Boolean);
-}, [data]);
-
-
-
-// % por medio de pago (desde admin)
-const paymentPercentsFromAdmin = useMemo(() => {
-  const raw =
-    data?.paymentMethodPercents ||
-    data?.admin?.paymentMethodPercents ||
-    data?.menu?.paymentMethodPercents ||
-    {};
-
-  if (!raw || typeof raw !== "object") return {};
-
-  const normalized = {};
-  for (const [k, v] of Object.entries(raw)) {
-    const key = String(k || "").trim().toLowerCase();
-    const num = Number(v);
-    if (!key) continue;
-    normalized[key] = Number.isFinite(num) ? num : 0;
-  }   return normalized;
-}, [data]);
-
-
-
-
-
-
-
-// labels “lindos” para los keys estándar
-const PAYMENT_LABELS = {
-  efectivo: 'Efectivo',
-  transferencia: 'Transferencia',
-  mercadopago: 'Mercado Pago',
-  tarjeta: 'Tarjeta',
-  modo: 'Modo',
-  otro: 'Otro',
-};
-
-const paymentOptionsLabeled = useMemo(() => {
-  return paymentOptionsFromAdmin.map((key) => ({
-    key,
-    label: PAYMENT_LABELS[key] || key, // si es “otro”, queda como está
-  }));
-}, [paymentOptionsFromAdmin]);
-
-// si el comercio tiene opciones y el usuario todavía no eligió, seteamos la primera
-useEffect(() => {
-  if (!isDelivery) return;
-  if (paymentMethod) return;
-  if (paymentOptionsFromAdmin.length === 0) return;
-  setPaymentMethod(paymentOptionsFromAdmin[0]);
-}, [isDelivery, paymentMethod, paymentOptionsFromAdmin]);
-
-
-
-// ============================
-// SUBTOTAL
-// ============================
-const subtotal = useMemo(() => {
-  return cart.reduce((sum, x) => {
-    const p = typeof x.price === "number" ? x.price : Number(x.price);
-    return sum + (Number.isFinite(p) ? p : 0) * (x.qty || 0);
-  }, 0);
-}, [cart]);
-
-// ============================
-// % DE RECARGO
-// ============================
-const feePct = useMemo(() => {
-  const key = String(paymentMethod || "")
-    .trim()
-    .toLowerCase();
-
-  if (!key) return 0;
-
-  const raw = paymentPercentsFromAdmin?.[key];
-  const num = Number(raw);
-
-  return Number.isFinite(num) ? num : 0;
-}, [paymentMethod, paymentPercentsFromAdmin]);
-
-// ============================
-// TOTAL FINAL
-// ============================
-const totalFinal = useMemo(() => {
-  if (!feePct) return subtotal;
-  return subtotal * (1 + feePct / 100);
-}, [subtotal, feePct]);
-
-
-  // ---------------------------
   // Armado del texto + WhatsApp
   // ---------------------------
   const buildWhatsAppText = () => {
@@ -318,15 +241,12 @@ const totalFinal = useMemo(() => {
     });
 
     const name = orderName.trim() || "Cliente sin nombre";
-   const payKey = paymentMethod.trim();
-const pay =
-  (PAYMENT_LABELS[payKey] || payKey) || "No especificada";
-
+    const payKey = paymentMethod.trim().toLowerCase();
+    const pay = (PAYMENT_LABELS[payKey] || paymentMethod.trim()) || "No especificada";
     const anot = anotacion.trim() || "Sin anotaciones";
 
     const isPickup = deliveryType === "pickup";
     const addr = address.trim();
-
     const entregaLine = isPickup
       ? `*Entrega:* Retira en el local\n`
       : `*Entrega:* Envío a domicilio\n*Dirección:* ${addr}\n`;
@@ -338,8 +258,7 @@ const pay =
       entregaLine +
       `\n*Detalle:*\n${lines.join("\n")}\n\n` +
       `*Subtotal:* $${money(subtotal)}\n` +
-      (feePct > 0 ? `*Recargo (${feePct}%):* $${money(totalFinal - subtotal)}\n` : '')
- +
+      (feePct > 0 ? `*Recargo (${feePct}%):* $${money(totalFinal - subtotal)}\n` : "") +
       `*TOTAL:* $${money(totalFinal)}\n` +
       `*Forma de pago:* ${pay}\n` +
       `*Anotaciones:* ${anot}\n\n` +
@@ -358,14 +277,10 @@ const pay =
     if (!comercioWhatsApp) return;
 
     const text = buildWhatsAppText();
-    window.open(
-      `https://wa.me/${comercioWhatsApp}?text=${encodeURIComponent(text)}`,
-      "_blank"
-    );
+    window.open(`https://wa.me/${comercioWhatsApp}?text=${encodeURIComponent(text)}`, "_blank");
   };
 
-  
-const needsPay = paymentOptionsFromAdmin.length > 0;
+  const needsPay = paymentOptionsFromAdmin.length > 0;
   const canSend =
     cart.length > 0 &&
     (deliveryType === "pickup" || address.trim().length > 0) &&
@@ -386,9 +301,7 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
               <i className="fas fa-utensils text-xl" style={{ color: primaryColor }} />
             </div>
           )}
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-            {restaurantName}
-          </h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">{restaurantName}</h1>
         </div>
       </header>
 
@@ -406,70 +319,62 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
         )}
 
         {/* LINKS DEL COMERCIO (solo delivery) */}
- {isDelivery && (mapsUrl || igUrl || waUrl) && (
-  <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-    
-    <button
-      onClick={() => setLinksOpen((prev) => !prev)}
-      className="w-full px-4 py-3 flex items-center justify-between text-sm font-semibold"
-      style={{ color: primaryColor }}
-    >
-      Información del comercio
-      <i
-        className={`fas fa-chevron-down transition-transform ${
-          linksOpen ? "rotate-180" : ""
-        }`}
-      />
-    </button>
+        {isDelivery && (mapsUrl || igUrl || waUrl) && (
+          <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <button
+              onClick={() => setLinksOpen((prev) => !prev)}
+              className="w-full px-4 py-3 flex items-center justify-between text-sm font-semibold"
+              style={{ color: primaryColor }}
+            >
+              Información del comercio
+              <i className={`fas fa-chevron-down transition-transform ${linksOpen ? "rotate-180" : ""}`} />
+            </button>
 
-    {linksOpen && (
-      <div className="px-4 pb-4 flex flex-wrap gap-2 justify-center border-t pt-3">
-        {mapsUrl && (
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="px-3 py-2 rounded-lg border text-sm font-semibold"
-            style={{ borderColor: primaryColor, color: primaryColor }}
-          >
-            📍 Cómo llegar
-          </a>
+            {linksOpen && (
+              <div className="px-4 pb-4 flex flex-wrap gap-2 justify-center border-t pt-3">
+                {mapsUrl && (
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                    style={{ borderColor: primaryColor, color: primaryColor }}
+                  >
+                    📍 Cómo llegar
+                  </a>
+                )}
+
+                {waUrl && (
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                    style={{ borderColor: primaryColor, color: primaryColor }}
+                  >
+                    💬 WhatsApp
+                  </a>
+                )}
+
+                {igUrl && (
+                  <a
+                    href={igUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-2 rounded-lg border text-sm font-semibold"
+                    style={{ borderColor: primaryColor, color: primaryColor }}
+                  >
+                    📷 Instagram @{igUser}
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
         )}
-
-        {waUrl && (
-          <a
-            href={waUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="px-3 py-2 rounded-lg border text-sm font-semibold"
-            style={{ borderColor: primaryColor, color: primaryColor }}
-          >
-            💬 WhatsApp
-          </a>
-        )}
-
-        {igUrl && (
-          <a
-            href={igUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="px-3 py-2 rounded-lg border text-sm font-semibold"
-            style={{ borderColor: primaryColor, color: primaryColor }}
-          >
-            📷 Instagram @{igUser}
-          </a>
-        )}
-      </div>
-    )}
-  </div>
-)}
-
-    
-
 
         {/* ACCORDION */}
         <div className="space-y-3">
-          {categories.map(category => {
+          {categories.map((category) => {
             const isOpen = openCategory === category;
             const items = itemsByCategory[category] || [];
 
@@ -478,7 +383,6 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                 key={category}
                 className="bg-white/95 backdrop-blur rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
               >
-                {/* HEADER CATEGORIA */}
                 <button
                   onClick={() => setOpenCategory(isOpen ? null : category)}
                   className="w-full px-5 py-4 flex items-center justify-between text-left"
@@ -486,27 +390,26 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                   <div>
                     <h2 className="font-bold text-gray-900">{category}</h2>
                     <p className="text-xs text-gray-500">
-                      {items.length} item{items.length !== 1 && 's'}
+                      {items.length} item{items.length !== 1 && "s"}
                     </p>
                   </div>
 
                   <i
-                    className={`fas fa-chevron-down transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    className={`fas fa-chevron-down transition-transform ${isOpen ? "rotate-180" : ""}`}
                     style={{ color: primaryColor }}
                   />
                 </button>
 
-                {/* ITEMS */}
                 {isOpen && (
                   <div className="px-5 pb-4 space-y-3">
-                    {items.map(item => (
+                    {items.map((item) => (
                       <div
                         key={item._id}
-                        className={`flex items-start justify-between gap-3 border-t pt-3 ${!item.available ? 'opacity-45' : ''}`}
+                        className={`flex items-start justify-between gap-3 border-t pt-3 ${
+                          !item.available ? "opacity-45" : ""
+                        }`}
                       >
-                        {/* IZQUIERDA */}
                         <div className="flex items-start gap-3 min-w-0">
-                          {/* THUMB */}
                           <div className="relative flex-shrink-0">
                             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-gray-200">
                               {item.image ? (
@@ -532,16 +435,11 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                             )}
                           </div>
 
-                          {/* TEXTO */}
                           <div className="min-w-0">
-                            <p className="font-medium text-gray-900 whitespace-normal break-words">
-                              {item.name}
-                            </p>
+                            <p className="font-medium text-gray-900 whitespace-normal break-words">{item.name}</p>
 
                             {item.description && (
-                              <p className="text-sm text-gray-500 whitespace-normal break-words">
-                                {item.description}
-                              </p>
+                              <p className="text-sm text-gray-500 whitespace-normal break-words">{item.description}</p>
                             )}
 
                             {item.tags && item.tags.length > 0 && (
@@ -559,10 +457,9 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                           </div>
                         </div>
 
-                        {/* DERECHA */}
                         <div className="flex flex-col items-end gap-2">
                           <span className="font-bold whitespace-nowrap" style={{ color: primaryColor }}>
-                            ${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}
+                            ${money(item.price)}
                           </span>
 
                           {isDelivery && (
@@ -573,7 +470,7 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                               style={{
                                 borderColor: primaryColor,
                                 color: primaryColor,
-                                opacity: item.available ? 1 : 0.4
+                                opacity: item.available ? 1 : 0.4,
                               }}
                             >
                               Agregar
@@ -590,19 +487,13 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
         </div>
 
         {categories.length === 0 && (
-          <div className="text-center py-12 text-gray-600">
-            No hay items cargados en este menú.
-          </div>
+          <div className="text-center py-12 text-gray-600">No hay items cargados en este menú.</div>
         )}
       </main>
 
-      {/* ✅ FAB: botón flotante para abrir carrito (solo delivery) */}
+      {/* ✅ FAB */}
       {isDelivery && (
-        <div
-          ref={fabRef}
-          className="fixed left-0 right-0 bottom-0 z-20"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        >
+        <div ref={fabRef} className="fixed left-0 right-0 bottom-0 z-20" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
           <div className="max-w-5xl mx-auto px-4 pb-4">
             <button
               type="button"
@@ -610,22 +501,15 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
               className="w-full rounded-2xl shadow-lg border bg-white/95 backdrop-blur px-4 py-3 flex items-center justify-between"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${primaryColor}22` }}
-                >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${primaryColor}22` }}>
                   <i className="fas fa-shopping-cart" style={{ color: primaryColor }} />
                 </div>
 
                 <div className="min-w-0 text-left">
                   <p className="text-sm font-bold text-gray-900 truncate">
-                    {itemsCount > 0
-                      ? `${itemsCount} item${itemsCount !== 1 ? 's' : ''} en el carrito`
-                      : "Carrito vacío"}
+                    {itemsCount > 0 ? `${itemsCount} item${itemsCount !== 1 ? "s" : ""} en el carrito` : "Carrito vacío"}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    Tocá para ver y confirmar
-                  </p>
+                  <p className="text-xs text-gray-500 truncate">Tocá para ver y confirmar</p>
                 </div>
               </div>
 
@@ -640,15 +524,9 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
       {/* ✅ Sheet del carrito */}
       {isDelivery && cartOpen && (
         <>
-          <div
-            className="fixed inset-0 z-30 bg-black/40"
-            onClick={() => setCartOpen(false)}
-          />
+          <div className="fixed inset-0 z-30 bg-black/40" onClick={() => setCartOpen(false)} />
 
-          <div
-            className="fixed left-0 right-0 bottom-0 z-40"
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-          >
+          <div className="fixed left-0 right-0 bottom-0 z-40" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
             <div className="max-w-5xl mx-auto px-4 pb-4">
               <div className="bg-white/95 backdrop-blur rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
                 <div className="p-4 flex items-center justify-between border-b">
@@ -656,22 +534,17 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                     <h3 className="font-bold text-gray-900">Tu pedido</h3>
                     <p className="text-xs text-gray-500">
                       Total: <span className="font-semibold" style={{ color: primaryColor }}>${money(totalFinal)}</span>
+                      {feePct > 0 && <span className="ml-2 text-xs text-gray-500">(incluye recargo {feePct}%)</span>}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {cart.length > 0 && (
-                      <button
-                        className="px-3 py-2 rounded-lg border text-sm font-semibold"
-                        onClick={clearCart}
-                      >
+                      <button className="px-3 py-2 rounded-lg border text-sm font-semibold" onClick={clearCart}>
                         Vaciar
                       </button>
                     )}
-                    <button
-                      className="px-3 py-2 rounded-lg border text-sm font-semibold"
-                      onClick={() => setCartOpen(false)}
-                    >
+                    <button className="px-3 py-2 rounded-lg border text-sm font-semibold" onClick={() => setCartOpen(false)}>
                       Cerrar
                     </button>
                   </div>
@@ -679,24 +552,24 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
 
                 <div className="p-4">
                   {cart.length === 0 ? (
-                    <p className="text-sm text-gray-500">
-                      Agregá productos desde el menú.
-                    </p>
+                    <p className="text-sm text-gray-500">Agregá productos desde el menú.</p>
                   ) : (
                     <div className="space-y-2 max-h-56 overflow-auto pr-1">
-                      {cart.map(x => (
+                      {cart.map((x) => (
                         <div key={x._id} className="flex items-center justify-between gap-2">
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">{x.name}</p>
-                            <p className="text-xs text-gray-500">
-                              ${money(x.price)} c/u
-                            </p>
+                            <p className="text-xs text-gray-500">${money(x.price)} c/u</p>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <button className="px-2 py-1 border rounded" onClick={() => decQty(x._id)}>-</button>
+                            <button className="px-2 py-1 border rounded" onClick={() => decQty(x._id)}>
+                              -
+                            </button>
                             <span className="text-sm font-semibold w-6 text-center">{x.qty}</span>
-                            <button className="px-2 py-1 border rounded" onClick={() => incQty(x._id)}>+</button>
+                            <button className="px-2 py-1 border rounded" onClick={() => incQty(x._id)}>
+                              +
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -704,12 +577,7 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                   )}
 
                   <div className="mt-3 flex flex-col gap-2">
-                    <input
-                      value={orderName}
-                      onChange={(e) => setOrderName(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                      placeholder="Tu nombre"
-                    />
+                    <input value={orderName} onChange={(e) => setOrderName(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Tu nombre" />
 
                     <div className="grid grid-cols-2 gap-2">
                       <button
@@ -740,41 +608,22 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                     </div>
 
                     {deliveryType === "delivery" && (
-                      <input
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                        placeholder="Dirección de entrega"
-                      />
+                      <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Dirección de entrega" />
                     )}
 
                     {paymentOptionsLabeled.length > 0 ? (
-  <select
-    value={paymentMethod}
-    onChange={(e) => setPaymentMethod(e.target.value)}
-    className="w-full border rounded-lg px-3 py-2 text-sm bg-white"
-  >
-    {paymentOptionsLabeled.map((opt) => (
-      <option key={opt.key} value={opt.key}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
-) : (
-  <input
-    value={paymentMethod}
-    onChange={(e) => setPaymentMethod(e.target.value)}
-    className="w-full border rounded-lg px-3 py-2 text-sm"
-    placeholder="Forma de pago (ej: efectivo, transferencia...)"
-  />
-)}
+                      <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+                        {paymentOptionsLabeled.map((opt) => (
+                          <option key={opt.key} value={opt.key}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Forma de pago (ej: efectivo, transferencia...)" />
+                    )}
 
-                    <input
-                      value={anotacion}
-                      onChange={(e) => setAnotacion(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                      placeholder="Aclaraciones de tu pedido"
-                    />
+                    <input value={anotacion} onChange={(e) => setAnotacion(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Aclaraciones de tu pedido" />
 
                     <button
                       className="w-full px-4 py-2 rounded-lg font-semibold text-sm text-white disabled:opacity-50"
@@ -785,9 +634,7 @@ const needsPay = paymentOptionsFromAdmin.length > 0;
                       Enviar pedido por WhatsApp
                     </button>
 
-                    <p className="text-[11px] text-gray-500">
-                      * Se enviará un mensaje con el detalle del pedido.
-                    </p>
+                    <p className="text-[11px] text-gray-500">* Se enviará un mensaje con el detalle del pedido.</p>
                   </div>
                 </div>
               </div>
