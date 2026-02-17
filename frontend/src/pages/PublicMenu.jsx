@@ -11,7 +11,6 @@ import PublicMenuCafeTypewriter from './templates/PublicMenuCafe';
 import PublicMenuCafeRelax from './templates/PublicMenuRelax';
 import PublicMenuVisual from './templates/PublicMenuFotoFirst';
 
-
 const PublicMenu = () => {
   const { uniqueId } = useParams();
 
@@ -24,11 +23,12 @@ const PublicMenu = () => {
       try {
         setLoading(true);
         setError(null);
+
         const menuData = await getPublicMenu(uniqueId);
         setData(menuData);
       } catch (err) {
         console.error('Error fetching menu:', err);
-        setError('Menu not found or currently unavailable.');
+        setError('Menú no encontrado.');
       } finally {
         setLoading(false);
       }
@@ -37,10 +37,35 @@ const PublicMenu = () => {
     fetchMenu();
   }, [uniqueId]);
 
-  const layout = data?.theme?.layout || 'grid';
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Cargando...
+      </div>
+    );
+  }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center">{error}</div>;
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        {error}
+      </div>
+    );
+  }
+
+  // ✅ Esto va ANTES del layout
+  if (data?.unavailable) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-center p-6">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Sitio no disponible</h1>
+          <p className="text-gray-600">Por favor contactá al comercio.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const layout = data?.theme?.layout || 'grid';
 
   if (layout === 'accordion') return <PublicMenuAccordion data={data} />;
   if (layout === 'list') return <PublicMenuList data={data} />;
@@ -49,6 +74,7 @@ const PublicMenu = () => {
   if (layout === 'cafe-typewriter') return <PublicMenuCafeTypewriter data={data} />;
   if (layout === 'cafe-relax') return <PublicMenuCafeRelax data={data} />;
   if (layout === 'visual') return <PublicMenuVisual data={data} />;
+
   return <PublicMenuGrid data={data} />;
 };
 

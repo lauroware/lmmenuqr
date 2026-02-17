@@ -30,4 +30,14 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { protect };
+const requireSuperAdmin = (req, res, next) => {
+  if (!req.admin?.isSuperAdmin) {
+    res.status(403);
+    throw new Error('No autorizado');
+  }
+  next();
+};
+
+module.exports = { protect, requireSuperAdmin };
+
+

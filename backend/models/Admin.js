@@ -14,6 +14,9 @@ const adminSchema = mongoose.Schema(
     address: { type: String, default: "" },
     instagram: { type: String, default: "" },
 
+    isActive: { type: Boolean, default: true },
+isSuperAdmin: { type: Boolean, default: false },
+
     // 🆕 Medios de pago configurables
     paymentMethods: {
       type: [String],
@@ -46,5 +49,8 @@ adminSchema.pre('save', async function (next) {
 adminSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
+
+
+
 
 module.exports = mongoose.model('Admin', adminSchema);

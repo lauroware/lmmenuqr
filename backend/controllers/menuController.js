@@ -245,8 +245,17 @@ const getPublicMenu = asyncHandler(async (req, res) => {
   MenuItem.find({ menu: menu._id }).sort({ order: 1, createdAt: 1 }),
  
     Admin.findById(menu.admin)
-     .select('whatsapp address instagram phone paymentMethods paymentMethodPercents')      .lean(),
+  .select('whatsapp address instagram phone paymentMethods paymentMethodPercents isActive')
+  .lean(),
 ]);
+
+if (!admin?.isActive) {
+  return res.status(200).json({
+    unavailable: true,
+    message: "Sitio no disponible",
+  });
+}
+
 
   const whatsapp = String(admin?.whatsapp || admin?.phone || '').trim();
   const address = String(admin?.address || '').trim();
