@@ -2,6 +2,27 @@ import axios from 'axios';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
+export const getAdmins = async () => {
+  const res = await fetch('/api/admin/super/admins', {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  return res.json();
+};
+
+export const toggleAdminStatus = async (id, isActive) => {
+  await fetch(`/api/admin/super/admins/${id}/active`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({ isActive }),
+  });
+};
+
+
 
 const getAuthToken = () => {
   return localStorage.getItem('adminToken');

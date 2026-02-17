@@ -13,6 +13,8 @@ import './index.css';
 import PrivateRoute from './components/PrivateRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import SuperAdmin from './pages/superAdmin';
+
 
 function App() {
   return (
@@ -34,6 +36,8 @@ function App() {
         <Route path="/admin/menu" element={<PrivateRoute><Menu /></PrivateRoute>} />
         <Route path="/admin/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/admin/appearance" element={<Appearance />} />
+        <Route path="/admin/super" element={<SuperAdmin />} />
+
 
         <Route path="*" element={<NotFound />} />
       </Routes>
