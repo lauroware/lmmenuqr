@@ -4,10 +4,19 @@ import { getAdmins, toggleAdminStatus } from '../api';
 const SuperAdmin = () => {
   const [admins, setAdmins] = useState([]);
 
+  const [error, setError] = useState(null);
+
+
   const fetchAdmins = async () => {
+  try {
+    setError(null);
     const data = await getAdmins();
     setAdmins(data);
-  };
+  } catch (e) {
+    console.error(e);
+    setError('No pude cargar clientes (revisá login/token).');
+  }
+};
 
   useEffect(() => {
     fetchAdmins();
@@ -18,9 +27,14 @@ const SuperAdmin = () => {
     fetchAdmins();
   };
 
+  
+
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Clientes</h1>
+      {error && <div className="mb-3 text-red-600">{error}</div>}
+
 
       <table className="w-full border">
         <thead>
@@ -31,6 +45,7 @@ const SuperAdmin = () => {
             <th className="p-2">Acción</th>
           </tr>
         </thead>
+
         <tbody>
           {admins.map((admin) => (
             <tr key={admin._id} className="border-t">
@@ -58,5 +73,7 @@ const SuperAdmin = () => {
     </div>
   );
 };
+
+
 
 export default SuperAdmin;
