@@ -141,6 +141,7 @@ export const reorderMenuItems = async (items) => {
 };
 
 export const getAdminProfile = getProfile;
+export const getQRCode = getQrCode;
 //lauro 
 
 

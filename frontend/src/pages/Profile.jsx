@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
-import { getAdminProfile, getAdminMenu, regenerateMenuLink, getQRCode } from '../api';
-
+import { getProfile as getAdminProfile, getAdminMenu, regenerateMenuLink, getQrCode as getQRCode } from '../api';
 const Profile = () => {
   const [profile, setProfile] = useState({
     name: '',
