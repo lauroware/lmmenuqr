@@ -2,35 +2,16 @@ import axios from 'axios';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
-export const getAdmins = async () => {
-  const response = await api.get('/admin/super/admins');
-  return response.data;
-};
-
-export const toggleAdminStatus = async (id, isActive) => {
-  const response = await api.patch(`/admin/super/admins/${id}/active`, { isActive });
-  return response.data;
-};
-
-
-
-
-const getAuthToken = () => {
-  return localStorage.getItem('adminToken');
-};
+const getAuthToken = () => localStorage.getItem('adminToken');
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use((config) => {
   const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
@@ -42,20 +23,75 @@ api.interceptors.response.use(
   }
 );
 
+// ── Super admin ────────────────────────────────────────────────────────
+export const getAdmins = async () => {
+  const response = await api.get('/admin/super/admins');
+  return response.data;
+};
+
+export const toggleAdminStatus = async (id, isActive) => {
+  const response = await api.patch(`/admin/super/admins/${id}/active`, { isActive });
+  return response.data;
+};
+
+export const activateMembership = async (id) => {
+  const response = await api.post(`/admin/super/admins/${id}/activate-membership`);
+  return response.data;
+};
+
+// ── Auth ───────────────────────────────────────────────────────────────
+export const login = async ({ email, password }) => {
+  const response = await api.post('/admin/login', { email, password });
+  return response.data;
+};
+
+export const signup = async (data) => {
+  const response = await api.post('/admin/register', data);
+  return response.data;
+};
+
+export const getProfile = async () => {
+  const response = await api.get('/admin/profile');
+  return response.data;
+};
+
+export const updateProfile = async (data) => {
+  const response = await api.put('/admin/profile', data);
+  return response.data;
+};
+
+export const forgotPassword = async (email) => {
+  const response = await api.post('/admin/forgot-password', { email });
+  return response.data;
+};
+
+export const resetPassword = async ({ token, password }) => {
+  const response = await api.post(`/admin/reset-password/${token}`, { password });
+  return response.data;
+};
+
+// ── Menú ───────────────────────────────────────────────────────────────
 export const uploadImage = async (image) => {
   const formData = new FormData();
   formData.append('image', image);
-
   const response = await api.post('/upload', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+    headers: { 'Content-Type': 'multipart/form-data' },
   });
   return response.data;
 };
 
 export const createMenuItem = async (itemData) => {
   const response = await api.post('/menu/items', itemData);
+  return response.data;
+};
+
+export const getMenuItems = async () => {
+  const response = await api.get('/menu/items');
+  return response.data;
+};
+
+export const getMenuItemById = async (id) => {
+  const response = await api.get(`/menu/items/${id}`);
   return response.data;
 };
 
@@ -69,8 +105,8 @@ export const deleteMenuItem = async (id) => {
   return response.data;
 };
 
-export const getMenuItems = async () => {
-  const response = await api.get('/menu/items');
+export const createMenu = async (menuData) => {
+  const response = await api.post('/menu', menuData);
   return response.data;
 };
 
@@ -79,35 +115,13 @@ export const getAdminMenu = async () => {
   return response.data;
 };
 
-export const createMenu = async (menuData) => {
-  const response = await api.post('/menu', menuData);
+export const getPublicMenu = async (uniqueId) => {
+  const response = await api.get(`/menu/${uniqueId}`);
   return response.data;
 };
 
-export const login = async (credentials) => {
-  const response = await api.post('/admin/login', credentials);
-  return response.data;
-};
-
-export const signup = async (userData) => {
-  const response = await api.post('/admin/register', userData);
-  return response.data;
-};
-
-// Admin profile management
-export const getAdminProfile = async () => {
-  const response = await api.get('/admin/profile');
-  return response.data;
-};
-
-export const updateAdminProfile = async (profileData) => {
-  const response = await api.put('/admin/profile', profileData);
-  return response.data;
-};
-
-// QR code and menu link management
-export const getQRCode = async (uniqueId) => {
-  const response = await api.get(`/qr/${uniqueId}`);
+export const getQrCode = async (uniqueId) => {
+  const response = await api.get(`/menu/qr/${uniqueId}`);
   return response.data;
 };
 
@@ -116,41 +130,14 @@ export const regenerateMenuLink = async () => {
   return response.data;
 };
 
-// Public menu access
-export const getPublicMenu = async (uniqueId) => {
-  const response = await api.get(`/menu/${uniqueId}`);
-  return response.data;
-};
-
-// Analytics (optional)
-export const getMenuAnalytics = async () => {
-  const response = await api.get('/admin/analytics');
-  return response.data;
-};
-
 export const updateMenuTheme = async (themeData) => {
   const response = await api.put('/menu/theme', themeData);
   return response.data;
 };
 
-export const forgotPassword = async (email) => {
-  const response = await api.post('/admin/forgot-password', { email });
-  return response.data;
-};
-
-export const resetPassword = async (token, password) => {
-  const response = await api.post(`/admin/reset-password/${token}`, { password });
-  return response.data;
-};
-
 export const reorderMenuItems = async (items) => {
-  // items: [{ _id, order }]
   const response = await api.put('/menu/items/reorder', { items });
   return response.data;
 };
 
-export const createDeliveryOrder = async ({ uniqueId, restaurantName, items, address, total }) => {
-  const response = await api.post('/orders', { uniqueId, restaurantName, items, address, total });
-  return response.data; // { orderId, pdfUrl }
-};
-
+export default api;

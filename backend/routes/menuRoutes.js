@@ -1,29 +1,18 @@
 const express = require('express');
 const {
-  createMenu,
-  getAdminMenu,
-  createMenuItem,
-  getMenuItems,
-  getMenuItemById,
-  updateMenuItem,
-  deleteMenuItem,
-  getPublicMenu,
-  getQrCode,
-  regenerateMenuLink,
-  updateMenuTheme,
-  reorderMenuItems, // ✅ IMPORTANTE
+  createMenu, getAdminMenu, createMenuItem, getMenuItems,
+  getMenuItemById, updateMenuItem, deleteMenuItem,
+  getPublicMenu, getQrCode, regenerateMenuLink,
+  updateMenuTheme, reorderMenuItems,
 } = require('../controllers/menuController');
-
-const { protect } = require('../middleware/authMiddleware');
+const { protect }           = require('../middleware/authMiddleware');
+const { checkMembership }   = require('../middleware/checkMembership');
 
 const router = express.Router();
 
 router.route('/').post(protect, createMenu).get(protect, getAdminMenu);
 
-// ✅ theme antes de /:uniqueId
 router.put('/theme', protect, updateMenuTheme);
-
-// ✅ reorder ANTES de /items/:id (por seguridad de matching)
 router.put('/items/reorder', protect, reorderMenuItems);
 
 router.route('/items')
@@ -38,7 +27,7 @@ router.route('/items/:id')
 router.post('/regenerate-link', protect, regenerateMenuLink);
 router.get('/qr/:uniqueId', getQrCode);
 
-// ✅ al final
-router.get('/:uniqueId', getPublicMenu);
+// ⬇️ Menú público — verificamos membresía antes de renderizar
+router.get('/:uniqueId', checkMembership, getPublicMenu);
 
 module.exports = router;
