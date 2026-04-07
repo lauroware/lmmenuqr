@@ -7,6 +7,10 @@ const PRICE         = import.meta.env.VITE_MEMBERSHIP_PRICE || '15.000';
  * Se muestra cuando alguien escanea el QR de un comercio con membresía vencida.
  * También se usa dentro del dashboard cuando la cuenta está bloqueada.
  */
+
+//lauro 
+
+
 const AccountBlocked = ({ isOwner = false }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">

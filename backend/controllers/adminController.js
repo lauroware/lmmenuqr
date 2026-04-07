@@ -163,5 +163,7 @@ const updateAdminProfile = asyncHandler(async (req, res) => {
   const updated = await admin.save();
   res.json({ ...publicFields(updated), token: generateToken(updated._id) });
 });
+//lauro 
+
 
 module.exports = { authAdmin, registerAdmin, getAdminProfile, updateAdminProfile, forgotPassword, resetPassword };

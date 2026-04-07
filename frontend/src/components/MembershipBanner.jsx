@@ -7,6 +7,10 @@ const PRICE         = import.meta.env.VITE_MEMBERSHIP_PRICE || '15.000';
  * Banner de membresía para mostrar en el dashboard del admin.
  * Props: membershipStatus, trialDaysLeft, membershipPaidUntil
  */
+
+//lauro 
+
+
 const MembershipBanner = ({ membershipStatus, trialDaysLeft, membershipPaidUntil }) => {
   if (membershipStatus === 'active') {
     const until = membershipPaidUntil

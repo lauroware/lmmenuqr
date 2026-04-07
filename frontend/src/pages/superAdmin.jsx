@@ -7,7 +7,7 @@ const STATUS_CONFIG = {
   expired: { label: 'Vencido',     bg: 'bg-red-100',    text: 'text-red-700',    dot: 'bg-red-500'    },
   blocked: { label: 'Bloqueado',   bg: 'bg-gray-100',   text: 'text-gray-600',   dot: 'bg-gray-400'   },
 };
-
+   
 const Badge = ({ status }) => {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.blocked;
   return (
@@ -201,5 +201,7 @@ const SuperAdmin = () => {
     </div>
   );
 };
+//lauro 
+
 
 export default SuperAdmin;

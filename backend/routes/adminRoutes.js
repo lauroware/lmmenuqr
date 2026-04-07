@@ -22,5 +22,7 @@ router.put('/profile', protect, updateAdminProfile);
 router.get('/super/admins',                          protect, requireSuperAdmin, listAdmins);
 router.patch('/super/admins/:id/active',             protect, requireSuperAdmin, setAdminActive);
 router.post('/super/admins/:id/activate-membership', protect, requireSuperAdmin, activateMembership);
+//lauro 
+
 
 module.exports = router;

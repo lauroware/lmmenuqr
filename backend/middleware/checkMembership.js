@@ -6,6 +6,9 @@ const asyncHandler = require('express-async-handler');
 const Admin = require('../models/Admin');
 const Menu  = require('../models/Menu');
 
+//lauro 
+
+
 const checkMembership = asyncHandler(async (req, res, next) => {
   const { uniqueId } = req.params;
   if (!uniqueId) return next();

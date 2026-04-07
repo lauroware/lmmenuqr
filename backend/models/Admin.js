@@ -37,6 +37,8 @@ const adminSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+//lauro 
+
 // ── Método: calcular estado actual de la membresía ─────────────────────
 adminSchema.methods.getMembershipStatus = function () {
   const now = new Date();
