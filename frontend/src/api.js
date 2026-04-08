@@ -147,4 +147,5 @@ export const updateAdminProfile = updateProfile;  // ← Ag
 // Al final del archivo, antes de export default api
 export const getQRCode = getQrCode;  // ← Agrega esta línea por si algo la pide
 
+
 export default api;
