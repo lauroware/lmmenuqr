@@ -5,7 +5,7 @@ const {
   getPublicMenu, getQrCode, regenerateMenuLink,
   updateMenuTheme, reorderMenuItems,
 } = require('../controllers/menuController');
-const { protect }           = require('../middleware/authMiddleware');
+const { protzect }           = require('../middleware/authMiddleware');
 const { checkMembership }   = require('../middleware/checkMembership');
 
 const router = express.Router();
