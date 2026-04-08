@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
-import { getAdminProfile, updateAdminProfile, getAdminMenu, uploadImage, updateMenuTheme } from '../api';
+import { getProfile as getAdminProfile, updateAdminProfile, getAdminMenu, uploadImage, updateMenuTheme } from '../api';
 
 
 const MAX_MB = 5;

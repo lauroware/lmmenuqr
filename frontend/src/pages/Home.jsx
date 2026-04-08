@@ -204,11 +204,12 @@ const Home = () => {
                   Perfecto para restaurantes y cafeterías pequeñas.
                 </p>
                 <ul className="mt-8 space-y-3 text-white/70">
-                  <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Digitalización de tu menú.</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Digitalización de tu menú actual.</li>
                   <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Ítems ilimitados</li>
                   <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Generamos el código QR u link para compartir</li>
                   <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Sin mantenimiento mensual</li>
-                  <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Modificaciones en precio o items: $ 10.000</li>
+                    <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Opcional: Dominio propio y hosting pago (consultar)</li>
+                  <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Te entregamos el código, no obstante si querés que te administremos los cambios, las modificaciones en precio o items se cobran: $ 10.000</li>
                 </ul>
               </div>
               <button className="mt-8 w-full bg-white/5 text-primary border border-primary/40 py-3 rounded-xl font-semibold hover:bg-white/10 transition">
@@ -226,7 +227,7 @@ const Home = () => {
                   <span className="text-white/60"> /pago único</span>
                 </div>
                 <p className="mt-4 text-white/70">
-                  Perfecto para restaurantes y cafeterías pequeñas que no cuentan con un menú en pdf o rqquieren profesionalizarlo manteniendo una estética acorde a su marca.
+                  Perfecto para restaurantes y cafeterías pequeñas que no cuentan con un menú en pdf o requieren profesionalizarlo manteniendo una estética acorde a su marca.
                 </p>
                 <ul className="mt-8 space-y-3 text-white/70">
                   <li className="flex items-center gap-2"><i className="fas fa-check-circle text-secondary"></i> Diseño profesional y a medida del cliente.</li>
@@ -249,7 +250,7 @@ const Home = () => {
               <div>
                 <h3 className="text-2xl font-bold text-white">Autogestionable</h3>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-white">$ 25.000</span>
+                  <span className="text-4xl font-bold text-white">$ 15.000</span>
                   <span className="text-white/60"> /mes</span>
                 </div>
                 <p className="mt-4 text-white/70">
