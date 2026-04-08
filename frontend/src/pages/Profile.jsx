@@ -18,53 +18,6 @@ const Profile = () => {
   const [regenerating, setRegenerating] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
 
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
-
-  const fetchProfileData = async () => {
-    try {
-      setLoading(true);
-      
-      const [userProfile, adminMenu] = await Promise.all([
-        getAdminProfile().catch(err => {
-          console.error('Error al obtener el perfil del admin:', err);
-          return null;
-        }),
-        getAdminMenu().catch(err => {
-          console.error('Error al obtener el menú del admin:', err);
-          return null;
-        })
-      ]);
-
-      if (userProfile) {
-        let uniqueId = '';
-        let menuUrl = '';
-        
-        if (adminMenu) {
-          uniqueId = adminMenu.uniqueId;
-          menuUrl = `${window.location.origin}/menu/${uniqueId}`;
-          generateQRCode(uniqueId);
-        }
-
-        setProfile({
-          name: userProfile.name,
-          email: userProfile.email,
-          restaurantName: userProfile.restaurantName,
-          phone: userProfile.phone,
-          createdAt: userProfile.createdAt,
-          uniqueId: uniqueId,
-          menuUrl: menuUrl,
-          views: 0
-        });
-      }
-    } catch (error) {
-      console.error('Error al obtener los datos del perfil:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const generateQRCode = async (uniqueId) => {
     if (!uniqueId) return;
     try {
@@ -76,6 +29,53 @@ const Profile = () => {
       setQrCode(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`);
     }
   };
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        
+        const [userProfile, adminMenu] = await Promise.all([
+          getAdminProfile().catch(err => {
+            console.error('Error al obtener el perfil del admin:', err);
+            return null;
+          }),
+          getAdminMenu().catch(err => {
+            console.error('Error al obtener el menú del admin:', err);
+            return null;
+          })
+        ]);
+
+        if (userProfile) {
+          let uniqueId = '';
+          let menuUrl = '';
+          
+          if (adminMenu) {
+            uniqueId = adminMenu.uniqueId;
+            menuUrl = `${window.location.origin}/menu/${uniqueId}`;
+            generateQRCode(uniqueId);
+          }
+
+          setProfile({
+            name: userProfile.name,
+            email: userProfile.email,
+            restaurantName: userProfile.restaurantName,
+            phone: userProfile.phone,
+            createdAt: userProfile.createdAt,
+            uniqueId: uniqueId,
+            menuUrl: menuUrl,
+            views: 0
+          });
+        }
+      } catch (error) {
+        console.error('Error al obtener los datos del perfil:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
 
   const handleRegenerateLink = async () => {
     try {
