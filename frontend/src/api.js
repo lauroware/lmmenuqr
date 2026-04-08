@@ -120,7 +120,6 @@ export const getPublicMenu = async (uniqueId) => {
   return response.data;
 };
 
-// Cambiado: solo una función QR con nombre consistente
 export const getQRCode = async (uniqueId) => {
   const response = await api.get(`/menu/qr/${uniqueId}`);
   return response.data;
@@ -141,13 +140,8 @@ export const reorderMenuItems = async (items) => {
   return response.data;
 };
 
-// Eliminados los alias duplicados
-// export const getAdminProfile = getProfile;  ← ELIMINADO
-// export const getQRCode = getQrCode;         ← ELIMINADO
-// export const getQrCode = ...                ← ELIMINADO
-
-// Mantener compatibilidad con código viejo
+// ── ALIAS PARA COMPATIBILIDAD (NECESARIOS PARA PROFILE) ─────────────────
 export const getAdminProfile = getProfile;
-export const getQrCode = getQRCode;  // getQrCode (minúscula) usa getQRCode (mayúscula)
+export const getQrCode = getQRCode;
 
 export default api;
