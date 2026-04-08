@@ -120,7 +120,7 @@ export const getPublicMenu = async (uniqueId) => {
   return response.data;
 };
 
-export const getQRCode = async (uniqueId) => {
+export const getQrCode = async (uniqueId) => {
   const response = await api.get(`/menu/qr/${uniqueId}`);
   return response.data;
 };
@@ -140,8 +140,7 @@ export const reorderMenuItems = async (items) => {
   return response.data;
 };
 
-// ── ALIAS PARA COMPATIBILIDAD (NECESARIOS PARA PROFILE) ─────────────────
+// ── Alias para compatibilidad ──────────────────────────────────────────
 export const getAdminProfile = getProfile;
-export const getQrCode = getQRCode;
 
 export default api;
