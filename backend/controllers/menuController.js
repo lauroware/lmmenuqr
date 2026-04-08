@@ -392,6 +392,8 @@ if (typeof layout === 'string') {
   res.json(menu.theme);
 });
 
+//me estoy hinchando los huevos
+
 
 module.exports = {
   createMenu,
